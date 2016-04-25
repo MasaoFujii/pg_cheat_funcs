@@ -15,6 +15,7 @@
 PG_MODULE_MAGIC;
 
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
+PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 
 /*
  * Compute an xlog file name given a WAL location.
@@ -37,4 +38,23 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
 	XLogFileName(xlogfilename, ThisTimeLineID, xlogsegno);
 
 	PG_RETURN_TEXT_P(cstring_to_text(xlogfilename));
+}
+
+/*
+ * Return the connection string that walreceiver uses to connect with
+ * the primary.
+ */
+Datum
+pg_show_primary_conninfo(PG_FUNCTION_ARGS)
+{
+	char		conninfo[MAXCONNINFO];
+	WalRcvData *walrcv = WalRcv;
+
+	SpinLockAcquire(&walrcv->mutex);
+	strlcpy(conninfo, (char *) walrcv->conninfo, MAXCONNINFO);
+	SpinLockRelease(&walrcv->mutex);
+
+	if (conninfo[0] == '\0')
+		PG_RETURN_NULL();
+	PG_RETURN_TEXT_P(cstring_to_text(conninfo));
 }

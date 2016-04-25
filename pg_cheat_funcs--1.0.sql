@@ -7,3 +7,12 @@ CREATE FUNCTION pg_xlogfile_name(pg_lsn, boolean)
 RETURNS text
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
+
+CREATE FUNCTION pg_show_primary_conninfo()
+RETURNS text
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT IMMUTABLE;
+
+REVOKE ALL ON
+FUNCTION pg_show_primary_conninfo()
+FROM PUBLIC;
