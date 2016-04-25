@@ -1,0 +1,5 @@
+# pg_cheat_funcs extension
+comment = 'provides cheat (but useful) functions'
+default_version = '1.0'
+module_pathname = '$libdir/pg_cheat_funcs'
+relocatable = true
