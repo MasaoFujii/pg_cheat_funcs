@@ -23,7 +23,7 @@
 PG_MODULE_MAGIC;
 
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
-PG_FUNCTION_INFO_V1(pg_set_nextxid);
+PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 
@@ -54,7 +54,7 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
  * Set and return the next transaction ID.
  */
 Datum
-pg_set_nextxid(PG_FUNCTION_ARGS)
+pg_set_next_xid(PG_FUNCTION_ARGS)
 {
 	TransactionId xid = PG_GETARG_UINT32(0);
 
@@ -62,7 +62,7 @@ pg_set_nextxid(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 				 errmsg("recovery is in progress"),
-		 errhint("pg_set_nextxid() cannot be executed during recovery.")));
+		 errhint("pg_set_next_xid() cannot be executed during recovery.")));
 
 	LWLockAcquire(XidGenLock, LW_EXCLUSIVE);
 	ShmemVariableCache->nextXid = xid;

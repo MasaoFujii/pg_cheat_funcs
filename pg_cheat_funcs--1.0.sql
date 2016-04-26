@@ -8,11 +8,11 @@ RETURNS text
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 
-CREATE FUNCTION pg_set_nextxid(xid)
+CREATE FUNCTION pg_set_next_xid(xid)
 RETURNS xid
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
-REVOKE ALL ON FUNCTION pg_set_nextxid(xid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION pg_set_next_xid(xid) FROM PUBLIC;
 
 CREATE FUNCTION pg_xid_assignment(OUT next_xid xid,
     OUT oldest_xid xid,
