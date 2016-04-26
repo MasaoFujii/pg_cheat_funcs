@@ -13,6 +13,15 @@ But note that the first 8 digits of returned WAL filename
 That is, this function can return bogus WAL file name.
 For details of this conversion, please see [PostgreSQL document](http://www.postgresql.org/docs/devel/static/functions-admin.html#FUNCTIONS-ADMIN-BACKUP).
 
+### xid pg_set_nextxid(transactionid xid)
+Set and return the next transaction ID.
+Note that this function doesn't check if it's safe to assign
+the given transaction ID to the next one.
+The caller must carefully choose the safe transaction ID,
+e.g., which doesn't cause a transaction ID wraparound problem.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### text pg_show_primary_conninf()
 Return the current value of primary_conninfo recovery parameter.
 If it's not set yet, NULL is returned.
