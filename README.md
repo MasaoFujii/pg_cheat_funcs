@@ -39,7 +39,7 @@ This function returns a record, shown in the table below.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
-### text pg_show_primary_conninf()
+### text pg_show_primary_conninfo()
 Return the current value of primary_conninfo recovery parameter.
 If it's not set yet, NULL is returned.
 This function is restricted to superusers by default,
