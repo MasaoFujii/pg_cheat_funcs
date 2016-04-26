@@ -9,9 +9,12 @@
 
 #include "access/clog.h"
 #include "access/commit_ts.h"
+#include "access/htup_details.h"
 #include "access/subtrans.h"
 #include "access/xlog_internal.h"
 #include "access/transam.h"
+#include "catalog/pg_type.h"
+#include "funcapi.h"
 #include "replication/walreceiver.h"
 #include "storage/lwlock.h"
 #include "utils/builtins.h"
@@ -21,6 +24,7 @@ PG_MODULE_MAGIC;
 
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 PG_FUNCTION_INFO_V1(pg_set_nextxid);
+PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 
 /*
@@ -86,6 +90,72 @@ pg_set_nextxid(PG_FUNCTION_ARGS)
 		ExtendSUBTRANS(xid - TransactionIdToEntry(xid));
 
 	PG_RETURN_UINT32(xid);
+}
+
+/*
+ * Return information about XID assignment state.
+ */
+Datum
+pg_xid_assignment(PG_FUNCTION_ARGS)
+{
+#define PG_XID_ASSIGNMENT_COLS	7
+	TupleDesc	tupdesc;
+	Datum		values[PG_XID_ASSIGNMENT_COLS];
+	bool		nulls[PG_XID_ASSIGNMENT_COLS];
+	TransactionId nextXid;
+	TransactionId oldestXid;
+	TransactionId xidVacLimit;
+	TransactionId xidWarnLimit;
+	TransactionId xidStopLimit;
+	TransactionId xidWrapLimit;
+	Oid			oldestXidDB;
+
+	/* Initialise values and NULL flags arrays */
+	MemSet(values, 0, sizeof(values));
+	MemSet(nulls, 0, sizeof(nulls));
+
+	/* Initialise attributes information in the tuple descriptor */
+	tupdesc = CreateTemplateTupleDesc(PG_XID_ASSIGNMENT_COLS, false);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 1, "next_xid",
+					   XIDOID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 2, "oldest_xid",
+					   XIDOID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 3, "xid_vac_limit",
+					   XIDOID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 4, "xid_warn_limit",
+					   XIDOID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 5, "xid_stop_limit",
+					   XIDOID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 6, "xid_wrap_limit",
+					   XIDOID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 7, "oldest_xid_db",
+					   OIDOID, -1, 0);
+
+	BlessTupleDesc(tupdesc);
+
+	/* Take a lock to ensure value consistency */
+	LWLockAcquire(XidGenLock, LW_EXCLUSIVE);
+	nextXid = ShmemVariableCache->nextXid;
+	oldestXid = ShmemVariableCache->oldestXid;
+	xidVacLimit = ShmemVariableCache->xidVacLimit;
+	xidWarnLimit = ShmemVariableCache->xidWarnLimit;
+	xidStopLimit = ShmemVariableCache->xidStopLimit;
+	xidWrapLimit = ShmemVariableCache->xidWrapLimit;
+	oldestXidDB = ShmemVariableCache->oldestXidDB;
+	LWLockRelease(XidGenLock);
+
+	/* Fetch values */
+	values[0] = TransactionIdGetDatum(nextXid);
+	values[1] = TransactionIdGetDatum(oldestXid);
+	values[2] = TransactionIdGetDatum(xidVacLimit);
+	values[3] = TransactionIdGetDatum(xidWarnLimit);
+	values[4] = TransactionIdGetDatum(xidStopLimit);
+	values[5] = TransactionIdGetDatum(xidWrapLimit);
+	values[6] = ObjectIdGetDatum(oldestXidDB);
+
+	/* Returns the record as Datum */
+	PG_RETURN_DATUM(HeapTupleGetDatum(
+						heap_form_tuple(tupdesc, values, nulls)));
 }
 
 /*
