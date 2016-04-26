@@ -26,15 +26,15 @@ but other users can be granted EXECUTE to run the function.
 Return information about transaction ID assignment state.
 This function returns a record, shown in the table below.
 
-| Column Name    | Data Type | Description                           |
-|----------------|-----------|---------------------------------------|
-| next_xid       | xid       | next transaction ID to assign         |
-| oldest_xid     | xid       | cluster-wide minimum datfrozenxid     |
-| xid_vac_limit  | xid       | start forcing autovacuums here        |
-| xid_warn_limit | xid       | start complaining here                |
-| xid_stop_limit | xid       | refuse to advance nextXid beyond here |
-| xid_wrap_limit | xid       | where the world ends                  |
-| oldest_xid_db  | oid       | database with minimum datfrozenxid    |
+| Column Name    | Data Type | Description                                       |
+|----------------|-----------|---------------------------------------------------|
+| next_xid       | xid       | next transaction ID to assign                     |
+| oldest_xid     | xid       | cluster-wide minimum datfrozenxid                 |
+| xid_vac_limit  | xid       | start forcing autovacuums here                    |
+| xid_warn_limit | xid       | start complaining here                            |
+| xid_stop_limit | xid       | refuse to advance next transaction ID beyond here |
+| xid_wrap_limit | xid       | where the world ends                              |
+| oldest_xid_db  | oid       | database with minimum datfrozenxid                |
 
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
