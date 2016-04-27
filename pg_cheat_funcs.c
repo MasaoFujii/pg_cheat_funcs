@@ -15,17 +15,118 @@
 #include "access/transam.h"
 #include "catalog/pg_type.h"
 #include "funcapi.h"
+#include "miscadmin.h"
 #include "replication/walreceiver.h"
+#include "replication/walsender.h"
+#include "replication/walsender_private.h"
 #include "storage/lwlock.h"
+#include "storage/procarray.h"
 #include "utils/builtins.h"
 #include "utils/pg_lsn.h"
 
 PG_MODULE_MAGIC;
 
+PG_FUNCTION_INFO_V1(pg_signal_process);
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
+
+static int signame2sig(char *signame);
+static bool IsWalSenderPid(int pid);
+static bool IsWalReceiverPid(int pid);
+
+/*
+ * Send a signal to PostgreSQL server process.
+ */
+Datum
+pg_signal_process(PG_FUNCTION_ARGS)
+{
+	int		pid = PG_GETARG_INT32(0);
+	char	*signame = text_to_cstring(PG_GETARG_TEXT_P(1));
+	int		sig = signame2sig(signame);
+
+	if (PostmasterPid != pid && !IsBackendPid(pid) &&
+		!IsWalSenderPid(pid) && !IsWalReceiverPid(pid))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 (errmsg("PID %d is not a PostgreSQL server process", pid))));
+
+	if (kill(pid, sig))
+		ereport(ERROR,
+				(errmsg("could not send signal to process %d: %m", pid)));
+
+	PG_RETURN_VOID();
+}
+
+/*
+ * Return signal corresponding to the given signal name.
+ */
+static int
+signame2sig(char *signame)
+{
+	if (strcmp(signame, "HUP") == 0)
+		return SIGHUP;
+	else if (strcmp(signame, "INT") == 0)
+		return SIGINT;
+	else if (strcmp(signame, "QUIT") == 0)
+		return SIGQUIT;
+	else if (strcmp(signame, "ABRT") == 0)
+		return SIGABRT;
+	else if (strcmp(signame, "KILL") == 0)
+		return SIGKILL;
+	else if (strcmp(signame, "TERM") == 0)
+		return SIGTERM;
+	else if (strcmp(signame, "USR1") == 0)
+		return SIGUSR1;
+	else if (strcmp(signame, "USR2") == 0)
+		return SIGUSR2;
+	else if (strcmp(signame, "CONT") == 0)
+		return SIGCONT;
+	else if (strcmp(signame, "STOP") == 0)
+		return SIGSTOP;
+	else
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 (errmsg("unrecognized signal name \"%s\"", signame),
+				  errhint("Valid signal names are \"HUP\", \"INT\", \"QUIT\", \"ABRT\", \"KILL\", \"TERM\", \"USR1\", \"USR2\", \"CONT\", and \"STOP\"."))));
+}
+
+/*
+ * Is a given pid a running walsender?
+ */
+static bool
+IsWalSenderPid(int pid)
+{
+	int	i;
+
+	if (pid == 0)
+		return false;
+
+	for (i = 0; i < max_wal_senders; i++)
+	{
+		WalSnd *walsnd = &WalSndCtl->walsnds[i];
+
+		if (walsnd->pid == pid)
+			return true;
+	}
+
+	return false;
+}
+
+/*
+ * Is a given pid a running walreceiver?
+ */
+static bool
+IsWalReceiverPid(int pid)
+{
+	WalRcvData *walrcv = WalRcv;
+
+	if (pid == 0)
+		return false;
+
+	return (walrcv->pid == pid);
+}
 
 /*
  * Compute an xlog file name given a WAL location.

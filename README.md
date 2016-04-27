@@ -1,6 +1,13 @@
 # pg_cheat_funcs
 This extension provides cheat (but useful) functions on PostgreSQL.
 
+### void pg_signal_process(pid int, signame text)
+Send a signal to PostgreSQL server process.
+This function can signal to only postmaster, backend, walsender and walreceiver process.
+Valid signal names are HUP, INT, QUIT, ABRT, KILL, TERM, USR1, USR2, CONT, and STOP.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### text pg_xlogfile_name(location pg_lsn, recovery boolean)
 Convert transaction log location string to file name.
 This function is almost the same as pg_xlogfile_name() which PostgreSQL core provides.
