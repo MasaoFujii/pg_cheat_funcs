@@ -32,7 +32,7 @@ PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 
-static int signame2sig(char *signame);
+static int GetSignalByName(char *signame);
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
 
@@ -44,7 +44,7 @@ pg_signal_process(PG_FUNCTION_ARGS)
 {
 	int		pid = PG_GETARG_INT32(0);
 	char	*signame = text_to_cstring(PG_GETARG_TEXT_P(1));
-	int		sig = signame2sig(signame);
+	int		sig = GetSignalByName(signame);
 
 	if (PostmasterPid != pid && !IsBackendPid(pid) &&
 		!IsWalSenderPid(pid) && !IsWalReceiverPid(pid))
@@ -63,7 +63,7 @@ pg_signal_process(PG_FUNCTION_ARGS)
  * Return signal corresponding to the given signal name.
  */
 static int
-signame2sig(char *signame)
+GetSignalByName(char *signame)
 {
 	if (strcmp(signame, "HUP") == 0)
 		return SIGHUP;
