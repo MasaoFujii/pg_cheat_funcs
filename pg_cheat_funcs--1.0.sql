@@ -1,6 +1,18 @@
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 \echo Use "CREATE EXTENSION pg_cheat_funcs" to load this file. \quit
 
+CREATE FUNCTION pg_stat_get_memory_context(OUT name text,
+    OUT parent text,
+    OUT level integer,
+    OUT total_bytes bigint,
+    OUT total_nblocks bigint,
+    OUT free_bytes bigint,
+    OUT free_chunks bigint,
+    OUT used_bytes bigint)
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT IMMUTABLE;
+REVOKE ALL ON FUNCTION pg_stat_get_memory_context() FROM PUBLIC;
+
 CREATE FUNCTION pg_signal_process(integer, text)
 RETURNS void
 AS 'MODULE_PATHNAME'

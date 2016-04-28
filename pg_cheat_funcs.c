@@ -22,19 +22,110 @@
 #include "storage/lwlock.h"
 #include "storage/procarray.h"
 #include "utils/builtins.h"
+#include "utils/memutils.h"
 #include "utils/pg_lsn.h"
 
 PG_MODULE_MAGIC;
 
+PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
 PG_FUNCTION_INFO_V1(pg_signal_process);
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 
+static void
+PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
+								TupleDesc tupdesc, MemoryContext context,
+								MemoryContext parent, int level);
 static int GetSignalByName(char *signame);
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
+
+/*
+ * Return statistics about all memory contexts.
+ */
+Datum
+pg_stat_get_memory_context(PG_FUNCTION_ARGS)
+{
+	ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
+	TupleDesc	tupdesc;
+	Tuplestorestate *tupstore;
+	MemoryContext per_query_ctx;
+	MemoryContext oldcontext;
+
+	/* check to see if caller supports us returning a tuplestore */
+	if (rsinfo == NULL || !IsA(rsinfo, ReturnSetInfo))
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("set-valued function called in context that cannot accept a set")));
+	if (!(rsinfo->allowedModes & SFRM_Materialize))
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("materialize mode required, but it is not " \
+						"allowed in this context")));
+
+	/* Build a tuple descriptor for our result type */
+	if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+		elog(ERROR, "return type must be a row type");
+
+	per_query_ctx = rsinfo->econtext->ecxt_per_query_memory;
+	oldcontext = MemoryContextSwitchTo(per_query_ctx);
+
+	tupstore = tuplestore_begin_heap(true, false, work_mem);
+	rsinfo->returnMode = SFRM_Materialize;
+	rsinfo->setResult = tupstore;
+	rsinfo->setDesc = tupdesc;
+
+	MemoryContextSwitchTo(oldcontext);
+
+	PutMemoryContextStatsTupleStore(tupstore, tupdesc,
+									TopMemoryContext, NULL, 1);
+
+	/* clean up and return the tuplestore */
+	tuplestore_donestoring(tupstore);
+
+	return (Datum) 0;
+}
+
+static void
+PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
+								TupleDesc tupdesc, MemoryContext context,
+								MemoryContext parent, int level)
+{
+#define PG_STAT_GET_MEMORY_CONTEXT_COLS	8
+	Datum		values[PG_STAT_GET_MEMORY_CONTEXT_COLS];
+	bool		nulls[PG_STAT_GET_MEMORY_CONTEXT_COLS];
+	MemoryContextCounters stat;
+	MemoryContext child;
+
+	if (context == NULL)
+		return;
+
+	/* Examine the context itself */
+	memset(&stat, 0, sizeof(stat));
+	(*context->methods->stats) (context, level, false, &stat);
+
+	memset(nulls, 0, sizeof(nulls));
+	values[0] = CStringGetTextDatum(context->name);
+	if (parent == NULL)
+		nulls[1] = true;
+	else
+		values[1] = CStringGetTextDatum(parent->name);
+	values[2] = Int32GetDatum(level);
+	values[3] = Int64GetDatum(stat.totalspace);
+	values[4] = Int64GetDatum(stat.nblocks);
+	values[5] = Int64GetDatum(stat.freespace);
+	values[6] = Int64GetDatum(stat.freechunks);
+	values[7] = Int64GetDatum(stat.totalspace - stat.freespace);
+	tuplestore_putvalues(tupstore, tupdesc, values, nulls);
+
+	for (child = context->firstchild; child != NULL; child = child->nextchild)
+	{
+		PutMemoryContextStatsTupleStore(tupstore, tupdesc,
+										child, context, level + 1);
+	}
+}
 
 /*
  * Send a signal to PostgreSQL server process.
