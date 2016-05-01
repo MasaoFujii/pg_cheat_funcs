@@ -1,6 +1,24 @@
 # pg_cheat_funcs
 This extension provides cheat (but useful) functions on PostgreSQL.
 
+### record pg_stat_get_memory_context()
+Return statistics about all memory contexts.
+This function returns a record, shown in the table below.
+
+| Column Name   | Data Type | Description                                    |
+|---------------|-----------|------------------------------------------------|
+| name          | text      | context name                                   |
+| parent        | text      | name of parent context                         |
+| level         | integer   | distance from TopMemoryContext in context tree |
+| total_bytes   | bigint    | total bytes requested from malloc              |
+| total_nblocks | bigint    | total number of malloc blocks                  |
+| free_bytes    | bigint    | free space in bytes                            |
+| free_chunks   | bigint    | number of free chunks                          |
+| used_bytes    | bigint    | used space in bytes                            |
+
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### void pg_signal_process(pid int, signame text)
 Send a signal to PostgreSQL server process.
 This function can signal to only postmaster, backend, walsender and walreceiver process.

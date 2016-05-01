@@ -80,7 +80,7 @@ pg_stat_get_memory_context(PG_FUNCTION_ARGS)
 	MemoryContextSwitchTo(oldcontext);
 
 	PutMemoryContextStatsTupleStore(tupstore, tupdesc,
-									TopMemoryContext, NULL, 1);
+									TopMemoryContext, NULL, 0);
 
 	/* clean up and return the tuplestore */
 	tuplestore_donestoring(tupstore);

@@ -10,7 +10,7 @@ CREATE FUNCTION pg_stat_get_memory_context(OUT name text,
     OUT free_chunks bigint,
     OUT used_bytes bigint)
 AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT IMMUTABLE;
+LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_stat_get_memory_context() FROM PUBLIC;
 
 CREATE FUNCTION pg_signal_process(integer, text)
