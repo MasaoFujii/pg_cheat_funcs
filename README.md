@@ -19,6 +19,8 @@ This function returns a record, shown in the table below.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+**This function is available only in PostgreSQL 9.6 or later.**
+
 ### void pg_signal_process(pid int, signame text)
 Send a signal to PostgreSQL server process.
 This function can signal to only postmaster, backend, walsender and walreceiver process.

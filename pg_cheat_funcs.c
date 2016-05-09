@@ -26,21 +26,27 @@
 
 PG_MODULE_MAGIC;
 
+/* pg_stat_get_memory_context function is available only in 9.6 or later */
+#if PG_VERSION_NUM >= 90600
 PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
+#endif
 PG_FUNCTION_INFO_V1(pg_signal_process);
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 
+#if PG_VERSION_NUM >= 90600
 static void
 PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
 								TupleDesc tupdesc, MemoryContext context,
 								MemoryContext parent, int level);
+#endif
 static int GetSignalByName(char *signame);
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
 
+#if PG_VERSION_NUM >= 90600
 /*
  * Return statistics about all memory contexts.
  */
@@ -125,6 +131,7 @@ PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
 										child, context, level + 1);
 	}
 }
+#endif	/* PG_VERSION_NUM >= 90600 */
 
 /*
  * Send a signal to PostgreSQL server process.
