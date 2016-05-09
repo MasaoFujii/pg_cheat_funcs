@@ -8,7 +8,6 @@
 #include "postgres.h"
 
 #include "access/clog.h"
-#include "access/commit_ts.h"
 #include "access/htup_details.h"
 #include "access/subtrans.h"
 #include "access/xlog_internal.h"
