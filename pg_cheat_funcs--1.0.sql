@@ -23,6 +23,12 @@ BEGIN
 END;
 $$;
 
+CREATE FUNCTION pg_stat_print_memory_context()
+RETURNS void
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT IMMUTABLE;
+REVOKE ALL ON FUNCTION pg_stat_print_memory_context() FROM PUBLIC;
+
 CREATE FUNCTION pg_signal_process(integer, text)
 RETURNS void
 AS 'MODULE_PATHNAME'

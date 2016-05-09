@@ -1,6 +1,8 @@
 # pg_cheat_funcs
 This extension provides cheat (but useful) functions on PostgreSQL.
 
+## Functions
+
 ### record pg_stat_get_memory_context()
 Return statistics about all memory contexts.
 This function returns a record, shown in the table below.
@@ -16,10 +18,19 @@ This function returns a record, shown in the table below.
 | free_chunks   | bigint    | number of free chunks                          |
 | used_bytes    | bigint    | used space in bytes                            |
 
+This function is available only in PostgreSQL 9.6 or later.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
-**This function is available only in PostgreSQL 9.6 or later.**
+### void pg_stat_print_memory_context()
+Cause statistics about all memory contexts to be logged.
+The format of log message for each memory context is:
+
+    [name]: [total_bytes] total in [total_nblocks] blocks; [free_bytes] free ([free_chunks] chunks); [used_bytes] used
+
+For descriptions of the above fields, please see [pg_stat_get_memory_context()](#record-pg_stat_get_memory_context).
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
 
 ### void pg_signal_process(pid int, signame text)
 Send a signal to PostgreSQL server process.
@@ -77,3 +88,10 @@ If it's not set yet, NULL is returned.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 For details of primary_conninfo parameter, please see [PostgreSQL document](http://www.postgresql.org/docs/devel/static/standby-settings.html).
+
+## Configuration Parameters
+
+### pg_cheat_functions.log_memory_context (boolean)
+Cause statistics about all memory contexts to be logged at the end of query execution.
+For details of log format, please see [pg_stat_print_memory_context()](#void-pg_stat_print_memory_context)
+This parameter is off by default. Only superusers can change this setting.

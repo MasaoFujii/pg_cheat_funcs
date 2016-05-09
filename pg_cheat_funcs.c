@@ -26,15 +26,27 @@
 
 PG_MODULE_MAGIC;
 
+/* GUC variables */
+static bool	pgcf_log_memory_context = false;
+
+/* Saved hook values in case of unload */
+static ExecutorEnd_hook_type prev_ExecutorEnd = NULL;
+
 /* pg_stat_get_memory_context function is available only in 9.6 or later */
 #if PG_VERSION_NUM >= 90600
 PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
 #endif
+PG_FUNCTION_INFO_V1(pg_stat_print_memory_context);
 PG_FUNCTION_INFO_V1(pg_signal_process);
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
+
+void		_PG_init(void);
+void		_PG_fini(void);
+
+static void pgcf_ExecutorEnd(QueryDesc *queryDesc);
 
 #if PG_VERSION_NUM >= 90600
 static void
@@ -42,9 +54,61 @@ PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
 								TupleDesc tupdesc, MemoryContext context,
 								MemoryContext parent, int level);
 #endif
+static void PrintMemoryContextStats(MemoryContext context, int level);
 static int GetSignalByName(char *signame);
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
+
+/*
+ * Module load callback
+ */
+void
+_PG_init(void)
+{
+	/* Define custom GUC variables. */
+	DefineCustomBoolVariable("pg_cheat_funcs.log_memory_context",
+							 "Cause statistics about all memory contexts to be logged.",
+							 NULL,
+							 &pgcf_log_memory_context,
+							 false,
+							 PGC_SUSET,
+							 0,
+							 NULL,
+							 NULL,
+							 NULL);
+
+	EmitWarningsOnPlaceholders("pg_cheat_funcs");
+
+	/* Install hooks. */
+	prev_ExecutorEnd = ExecutorEnd_hook;
+	ExecutorEnd_hook = pgcf_ExecutorEnd;
+}
+
+/*
+ * Module unload callback
+ */
+void
+_PG_fini(void)
+{
+	/* Uninstall hooks. */
+	ExecutorEnd_hook = prev_ExecutorEnd;
+}
+
+/*
+ * ExecutorEnd hook
+ */
+static void
+pgcf_ExecutorEnd(QueryDesc *queryDesc)
+{
+	if (prev_ExecutorEnd)
+		prev_ExecutorEnd(queryDesc);
+	else
+		standard_ExecutorEnd(queryDesc);
+
+	/* Print statistics about TopMemoryContext and all its descendants */
+	if (pgcf_log_memory_context)
+		PrintMemoryContextStats(TopMemoryContext, 0);
+}
 
 #if PG_VERSION_NUM >= 90600
 /*
@@ -132,6 +196,38 @@ PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
 	}
 }
 #endif	/* PG_VERSION_NUM >= 90600 */
+
+/*
+ * Print statistics about TopMemoryContext and all its descendants.
+ */
+Datum
+pg_stat_print_memory_context(PG_FUNCTION_ARGS)
+{
+	PrintMemoryContextStats(TopMemoryContext, 0);
+
+	PG_RETURN_VOID();
+}
+
+/*
+ * Print statistics about the named context and all its descendants.
+ */
+static void
+PrintMemoryContextStats(MemoryContext context, int level)
+{
+	MemoryContext child;
+
+	if (context == NULL)
+		return;
+
+#if PG_VERSION_NUM >= 90600
+	(*context->methods->stats) (context, level, true, NULL);
+#else
+	(*context->methods->stats) (context, level);
+#endif
+
+	for (child = context->firstchild; child != NULL; child = child->nextchild)
+		PrintMemoryContextStats(child, level + 1);
+}
 
 /*
  * Send a signal to PostgreSQL server process.
