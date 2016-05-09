@@ -3,6 +3,12 @@ This extension provides cheat (but useful) functions on PostgreSQL.
 
 ## Functions
 
+Note that **CREATE EXTENSION pg_cheat_funcs** needs to be executed
+in all the databases that you want to execute the functions that
+this extension provides.
+
+    =# CREATE EXTENSION pg_cheat_funcs;
+
 ### record pg_stat_get_memory_context()
 Return statistics about all memory contexts.
 This function returns a record, shown in the table below.
@@ -90,6 +96,12 @@ but other users can be granted EXECUTE to run the function.
 For details of primary_conninfo parameter, please see [PostgreSQL document](http://www.postgresql.org/docs/devel/static/standby-settings.html).
 
 ## Configuration Parameters
+
+Note that [shared_preload_libraries](http://www.postgresql.org/docs/devel/static/runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES)
+or [session_preload_libraries](http://www.postgresql.org/docs/devel/static/runtime-config-client.html#GUC-SESSION-PRELOAD-LIBRARIES)
+(available in PostgreSQL 9.4 or later) must be set to 'pg_cheat_funcs'
+in postgresql.conf
+if you want to use the configuration parameters which this extension provides.
 
 ### pg_cheat_functions.log_memory_context (boolean)
 Cause statistics about all memory contexts to be logged at the end of query execution.
