@@ -114,6 +114,41 @@ This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 For details of primary_conninfo parameter, please see [PostgreSQL document](http://www.postgresql.org/docs/devel/static/standby-settings.html).
 
+### bytea pglz_compress(text)
+Create and return a compressed version of text data.
+This function uses PGLZ (an implementation of LZ compression for PostgreSQL)
+for the compression.
+If the compression fails (e.g., the compressed result is actually
+bigger than the original), this function returns the original data.
+Note that the return data may be 4-bytes bigger than the original
+even when the compression fails because 4-bytes extra information
+like the length of original data is always stored in it.
+The bytea data that this function returns needs to be decompressed
+by using pg_lz_decompress() to obtain the original text data.
+
+### bytea pglz_compress_bytea(bytea)
+Create and return a compressed version of bytea data.
+This function uses PGLZ (an implementation of LZ compression for PostgreSQL)
+for the compression.
+If the compression fails (e.g., the compressed result is actually
+bigger than the original), this function returns the original data.
+Note that the return data may be 4-bytes bigger than the original
+even when the compression fails because 4-bytes extra information
+like the length of original data is always stored in it.
+The bytea data that this function returns needs to be decompressed
+by using pg_lz_decompress_bytea() to obtain the original bytea data.
+
+### text pglz_decompress(bytea)
+Decompress a compressed version of bytea data into text.
+Note that the input of this function must be the bytea data that
+pg_lz_compress() or pg_lz_compress_bytea() returned.
+Otherwise this function may return a corrupted data.
+
+### bytea pglz_decompress_bytea(bytea)
+Decompress a compressed version of bytea data into bytea.
+Note that the input of this function must be the bytea data that
+pg_lz_compress() or pg_lz_compress_bytea() returned.
+Otherwise this function may return a corrupted data.
 ## Configuration Parameters
 
 Note that [shared_preload_libraries](http://www.postgresql.org/docs/devel/static/runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES)

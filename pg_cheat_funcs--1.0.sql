@@ -64,3 +64,23 @@ RETURNS text
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 REVOKE ALL ON FUNCTION pg_show_primary_conninfo() FROM PUBLIC;
+
+CREATE FUNCTION pglz_compress(text)
+RETURNS bytea
+AS 'MODULE_PATHNAME', 'pglz_compress_text'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION pglz_compress_bytea(bytea)
+RETURNS bytea
+AS 'MODULE_PATHNAME', 'pglz_compress_bytea'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION pglz_decompress(bytea)
+RETURNS text
+AS 'MODULE_PATHNAME', 'pglz_decompress_text'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION pglz_decompress_bytea(bytea)
+RETURNS bytea
+AS 'MODULE_PATHNAME', 'pglz_decompress_bytea'
+LANGUAGE C STRICT IMMUTABLE;

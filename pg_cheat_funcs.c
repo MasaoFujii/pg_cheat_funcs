@@ -13,6 +13,7 @@
 #include "access/xlog_internal.h"
 #include "access/transam.h"
 #include "catalog/pg_type.h"
+#include "common/pg_lzcompress.h"
 #include "funcapi.h"
 #include "miscadmin.h"
 #include "replication/walreceiver.h"
@@ -32,6 +33,23 @@ static bool	pgcf_log_memory_context = false;
 /* Saved hook values in case of unload */
 static ExecutorEnd_hook_type prev_ExecutorEnd = NULL;
 
+/* The information at the start of the compressed data */
+typedef struct pglz_header
+{
+	int32		vl_len_;		/* varlena header (do not touch directly!) */
+	int32		rawsize;
+} pglz_header;
+
+#define PGLZ_HDRSZ		((int32) sizeof(pglz_header))
+#define PGLZ_RAWSIZE(ptr) (((pglz_header *) (ptr))->rawsize & 0x3FFFFFFF)
+#define PGLZ_RAWDATA(ptr) (((char *) (ptr)) + PGLZ_HDRSZ)
+#define PGLZ_SET_RAWSIZE(ptr, len) \
+	(((pglz_header *) (ptr))->rawsize = ((len) & 0x3FFFFFFF))
+#define PGLZ_SET_RAWSIZE_COMPRESSED(ptr, len) \
+	(((pglz_header *) (ptr))->rawsize = (((len) & 0x3FFFFFFF) | 0x40000000))
+#define PGLZ_IS_COMPRESSED(ptr) \
+	((((pglz_header *) (ptr))->rawsize & 0xC0000000) == 0x40000000)
+
 /* pg_stat_get_memory_context function is available only in 9.6 or later */
 #if PG_VERSION_NUM >= 90600
 PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
@@ -42,6 +60,10 @@ PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
+PG_FUNCTION_INFO_V1(pglz_compress_text);
+PG_FUNCTION_INFO_V1(pglz_compress_bytea);
+PG_FUNCTION_INFO_V1(pglz_decompress_text);
+PG_FUNCTION_INFO_V1(pglz_decompress_bytea);
 
 void		_PG_init(void);
 void		_PG_fini(void);
@@ -58,6 +80,8 @@ static void PrintMemoryContextStats(MemoryContext context, int level);
 static int GetSignalByName(char *signame);
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
+static struct varlena *PGLZCompress(struct varlena *source);
+static struct varlena *PGLZDecompress(struct varlena *source);
 
 /*
  * Module load callback
@@ -469,4 +493,108 @@ pg_show_primary_conninfo(PG_FUNCTION_ARGS)
 	if (conninfo[0] == '\0')
 		PG_RETURN_NULL();
 	PG_RETURN_TEXT_P(cstring_to_text(conninfo));
+}
+
+/*
+ * Create a compressed version of a text datum
+ */
+Datum
+pglz_compress_text(PG_FUNCTION_ARGS)
+{
+	text		*source = PG_GETARG_TEXT_P(0);
+	PG_RETURN_BYTEA_P(PGLZCompress((struct varlena *) source));
+}
+
+/*
+ * Create a compressed version of a bytea datum
+ */
+Datum
+pglz_compress_bytea(PG_FUNCTION_ARGS)
+{
+	bytea	*source = PG_GETARG_BYTEA_P(0);
+	PG_RETURN_BYTEA_P(PGLZCompress((struct varlena *) source));
+}
+
+/*
+ * Create a compressed version of a varlena datum
+ */
+static struct varlena *
+PGLZCompress(struct varlena *source)
+{
+	struct varlena	*dest;
+	int32	orig_len = VARSIZE(source) - VARHDRSZ;
+	int32	len;
+
+	dest = (struct varlena *) palloc(PGLZ_MAX_OUTPUT(orig_len) + PGLZ_HDRSZ);
+
+	/*
+	 * We recheck the actual size even if pglz_compress() reports success,
+	 * because it might be satisfied with having saved as little as one byte
+	 * in the compressed data.
+	 */
+	len = pglz_compress(VARDATA(source), orig_len,
+						PGLZ_RAWDATA(dest), PGLZ_strategy_default);
+	if (len >= 0 && len < orig_len)
+	{
+		/* successful compression */
+		PGLZ_SET_RAWSIZE_COMPRESSED(dest, orig_len);
+		SET_VARSIZE(dest, len + PGLZ_HDRSZ);
+	}
+	else
+	{
+		/* incompressible data */
+		PGLZ_SET_RAWSIZE(dest, orig_len);
+		SET_VARSIZE(dest, orig_len + PGLZ_HDRSZ);
+		memcpy(PGLZ_RAWDATA(dest), VARDATA(source), orig_len);
+	}
+
+	return dest;
+}
+
+/*
+ * Decompress a compressed version of bytea into text.
+ */
+Datum
+pglz_decompress_text(PG_FUNCTION_ARGS)
+{
+	bytea	*source = PG_GETARG_BYTEA_P(0);
+	PG_RETURN_TEXT_P(PGLZDecompress((struct varlena *) source));
+}
+
+/*
+ * Decompress a compressed version of bytea into bytea.
+ */
+Datum
+pglz_decompress_bytea(PG_FUNCTION_ARGS)
+{
+	bytea	*source = PG_GETARG_BYTEA_P(0);
+	PG_RETURN_BYTEA_P(PGLZDecompress((struct varlena *) source));
+}
+
+/*
+ * Decompress a compressed version of a varlena datum.
+ */
+static struct varlena *
+PGLZDecompress(struct varlena *source)
+{
+	struct varlena	*dest;
+	int32	orig_len = PGLZ_RAWSIZE(source);
+
+	dest = (struct varlena *) palloc(orig_len + VARHDRSZ);
+	SET_VARSIZE(dest, orig_len + VARHDRSZ);
+
+	if (!PGLZ_IS_COMPRESSED(source))
+		memcpy(VARDATA(dest), PGLZ_RAWDATA(source), orig_len);
+	else
+	{
+		if (pglz_decompress(PGLZ_RAWDATA(source),
+							VARSIZE(source) - PGLZ_HDRSZ,
+							VARDATA(dest), orig_len) < 0)
+			ereport(ERROR,
+					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					 (errmsg("specified compressed data is corrupted"),
+					  errhint("Make sure compressed data that pglz_compress or pglz_compress_bytea created is specified."))));
+	}
+
+	return dest;
 }
