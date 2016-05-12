@@ -1,3 +1,9 @@
 CREATE EXTENSION pg_cheat_funcs;
 \pset null '(null)'
+SELECT pg_stat_print_memory_context();
+ pg_stat_print_memory_context 
+------------------------------
+ 
+(1 row)
+
 DROP EXTENSION pg_cheat_funcs;
