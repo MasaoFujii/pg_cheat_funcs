@@ -1,8 +1,6 @@
 language: c
 
-compiler:
-   - clang
-   - gcc
+compiler: gcc
 
 env:
    matrix:
@@ -14,6 +12,7 @@ env:
       - PGBRANCH=REL9_1_STABLE
 
 before_install:
+   - sudo service postgresql stop
    - CURDIR=$(pwd)
    - PGHOME=${CURDIR}/${PGBRANCH}
    - PGDATA=${PGHOME}/data
