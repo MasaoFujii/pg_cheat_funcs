@@ -22,7 +22,9 @@
 #include "miscadmin.h"
 #include "replication/walreceiver.h"
 #include "replication/walsender.h"
+#if PG_VERSION_NUM >= 90200
 #include "replication/walsender_private.h"
+#endif
 #include "storage/lwlock.h"
 #include "storage/procarray.h"
 #include "utils/builtins.h"
