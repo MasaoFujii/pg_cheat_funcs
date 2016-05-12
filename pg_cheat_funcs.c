@@ -8,7 +8,9 @@
 #include "postgres.h"
 
 #include "access/clog.h"
+#if PG_VERSION_NUM >= 90300
 #include "access/htup_details.h"
+#endif
 #include "access/subtrans.h"
 #include "access/xlog_internal.h"
 #include "access/transam.h"
@@ -332,6 +334,8 @@ GetSignalByName(char *signame)
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 (errmsg("unrecognized signal name \"%s\"", signame),
 				  errhint("Valid signal names are \"HUP\", \"INT\", \"QUIT\", \"ABRT\", \"KILL\", \"TERM\", \"USR1\", \"USR2\", \"CONT\", and \"STOP\"."))));
+
+	return 0;	/* keep compiler quiet */
 }
 
 /*
