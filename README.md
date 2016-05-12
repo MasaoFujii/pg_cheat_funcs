@@ -1,6 +1,9 @@
 # pg_cheat_funcs
 This extension provides cheat (but useful) functions on PostgreSQL.
 
+## Test Status
+[![Build Status](https://travis-ci.org/MasaoFujii/pg_cheat_funcs.svg?branch=master)](https://travis-ci.org/MasaoFujii/pg_cheat_funcs)
+
 ## Install
 
 Download the source archive of pg_cheat_funcs from
