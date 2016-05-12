@@ -6,4 +6,10 @@ SELECT pg_stat_print_memory_context();
  
 (1 row)
 
+SELECT pg_signal_process(pg_postmaster_pid(), 'HUP');
+ pg_signal_process 
+-------------------
+ 
+(1 row)
+
 DROP EXTENSION pg_cheat_funcs;
