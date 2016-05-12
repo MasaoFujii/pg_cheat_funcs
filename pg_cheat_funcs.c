@@ -72,6 +72,7 @@ PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
+PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 
 void		_PG_init(void);
 void		_PG_fini(void);
@@ -499,6 +500,15 @@ pg_show_primary_conninfo(PG_FUNCTION_ARGS)
 	if (conninfo[0] == '\0')
 		PG_RETURN_NULL();
 	PG_RETURN_TEXT_P(cstring_to_text(conninfo));
+}
+
+/*
+ * Return the PID of the postmaster process.
+ */
+Datum
+pg_postmaster_pid(PG_FUNCTION_ARGS)
+{
+	PG_RETURN_INT32(PostmasterPid);
 }
 
 #if PG_VERSION_NUM >= 90500

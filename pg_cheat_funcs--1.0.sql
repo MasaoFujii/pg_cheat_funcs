@@ -65,6 +65,11 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 REVOKE ALL ON FUNCTION pg_show_primary_conninfo() FROM PUBLIC;
 
+CREATE FUNCTION pg_postmaster_pid()
+RETURNS integer
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT STABLE;
+
 /* PGLZ compression functions are available only in 9.5 or later */
 DO $$
 DECLARE

@@ -114,6 +114,9 @@ This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 For details of primary_conninfo parameter, please see [PostgreSQL document](http://www.postgresql.org/docs/devel/static/standby-settings.html).
 
+### integer pg_postmaster_pid()
+Return the Process ID of the postmaster process.
+
 ### bytea pglz_compress(text)
 Create and return a compressed version of text data.
 This function uses PGLZ (an implementation of LZ compression for PostgreSQL)
