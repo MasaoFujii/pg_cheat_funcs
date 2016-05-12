@@ -35,12 +35,22 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_signal_process(integer, text) FROM PUBLIC;
 
--- Use VOLATILE because the heading 8 digits of returned WAL file name
--- (i.e., represents the timeline) can be changed during recovery.
-CREATE FUNCTION pg_xlogfile_name(pg_lsn, boolean)
-RETURNS text
-AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT VOLATILE;
+/* pg_xlogfile_name function is available only in 9.4 or later */
+DO $$
+DECLARE
+    pgversion TEXT;
+BEGIN
+    SELECT current_setting('server_version_num') INTO pgversion;
+    IF pgversion >= '90400' THEN
+        -- Use VOLATILE because the heading 8 digits of returned WAL file name
+        -- (i.e., represents the timeline) can be changed during recovery.
+        CREATE FUNCTION pg_xlogfile_name(pg_lsn, boolean)
+        RETURNS text
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT VOLATILE;
+    END IF;
+END;
+$$;
 
 CREATE FUNCTION pg_set_next_xid(xid)
 RETURNS xid

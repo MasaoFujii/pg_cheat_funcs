@@ -83,6 +83,7 @@ But note that the first 8 digits of returned WAL filename
 (which represents the timeline ID) can be completely incorrect.
 That is, this function can return bogus WAL file name.
 For details of this conversion, please see [PostgreSQL document](http://www.postgresql.org/docs/devel/static/functions-admin.html#FUNCTIONS-ADMIN-BACKUP).
+This function is available only in PostgreSQL 9.4 or later.
 
 ### xid pg_set_next_xid(transactionid xid)
 Set and return the next transaction ID.

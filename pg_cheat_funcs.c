@@ -25,7 +25,9 @@
 #include "storage/procarray.h"
 #include "utils/builtins.h"
 #include "utils/memutils.h"
+#if PG_VERSION_NUM >= 90400
 #include "utils/pg_lsn.h"
+#endif
 
 PG_MODULE_MAGIC;
 
@@ -68,11 +70,27 @@ PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
 #endif
 PG_FUNCTION_INFO_V1(pg_stat_print_memory_context);
 PG_FUNCTION_INFO_V1(pg_signal_process);
+#if PG_VERSION_NUM >= 90400
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
+#endif
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
+
+/*
+ * The function prototypes are created as a part of PG_FUNCTION_INFO_V1
+ * macro since 9.4, and hence the declaration of the function prototypes
+ * here is necessary only for 9.3 or before.
+ */
+#if PG_VERSION_NUM < 90400
+Datum pg_stat_print_memory_context(PG_FUNCTION_ARGS);
+Datum pg_signal_process(PG_FUNCTION_ARGS);
+Datum pg_set_next_xid(PG_FUNCTION_ARGS);
+Datum pg_xid_assignment(PG_FUNCTION_ARGS);
+Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
+Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
+#endif
 
 void		_PG_init(void);
 void		_PG_fini(void);
@@ -352,6 +370,7 @@ IsWalReceiverPid(int pid)
 	return (walrcv->pid == pid);
 }
 
+#if PG_VERSION_NUM >= 90400
 /*
  * Compute an xlog file name given a WAL location.
  */
@@ -374,6 +393,7 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
 
 	PG_RETURN_TEXT_P(cstring_to_text(xlogfilename));
 }
+#endif	/* PG_VERSION_NUM >= 90400 */
 
 /*
  * Set and return the next transaction ID.
