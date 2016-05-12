@@ -125,6 +125,7 @@ even when the compression fails because 4-bytes extra information
 like the length of original data is always stored in it.
 The bytea data that this function returns needs to be decompressed
 by using pg_lz_decompress() to obtain the original text data.
+This function is available only in PostgreSQL 9.5 or later.
 
 ### bytea pglz_compress_bytea(bytea)
 Create and return a compressed version of bytea data.
@@ -137,18 +138,22 @@ even when the compression fails because 4-bytes extra information
 like the length of original data is always stored in it.
 The bytea data that this function returns needs to be decompressed
 by using pg_lz_decompress_bytea() to obtain the original bytea data.
+This function is available only in PostgreSQL 9.5 or later.
 
 ### text pglz_decompress(bytea)
 Decompress a compressed version of bytea data into text.
 Note that the input of this function must be the bytea data that
 pg_lz_compress() or pg_lz_compress_bytea() returned.
 Otherwise this function may return a corrupted data.
+This function is available only in PostgreSQL 9.5 or later.
 
 ### bytea pglz_decompress_bytea(bytea)
 Decompress a compressed version of bytea data into bytea.
 Note that the input of this function must be the bytea data that
 pg_lz_compress() or pg_lz_compress_bytea() returned.
 Otherwise this function may return a corrupted data.
+This function is available only in PostgreSQL 9.5 or later.
+
 ## Configuration Parameters
 
 Note that [shared_preload_libraries](http://www.postgresql.org/docs/devel/static/runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES)

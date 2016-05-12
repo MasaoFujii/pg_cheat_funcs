@@ -65,22 +65,59 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 REVOKE ALL ON FUNCTION pg_show_primary_conninfo() FROM PUBLIC;
 
-CREATE FUNCTION pglz_compress(text)
-RETURNS bytea
-AS 'MODULE_PATHNAME', 'pglz_compress_text'
-LANGUAGE C STRICT IMMUTABLE;
+/* PGLZ compression functions are available only in 9.5 or later */
+DO $$
+DECLARE
+    pgversion TEXT;
+BEGIN
+    SELECT current_setting('server_version_num') INTO pgversion;
+    IF pgversion >= '90500' THEN
+        CREATE FUNCTION pglz_compress(text)
+        RETURNS bytea
+        AS 'MODULE_PATHNAME', 'pglz_compress_text'
+        LANGUAGE C STRICT IMMUTABLE;
+    END IF;
+END;
+$$;
 
-CREATE FUNCTION pglz_compress_bytea(bytea)
-RETURNS bytea
-AS 'MODULE_PATHNAME', 'pglz_compress_bytea'
-LANGUAGE C STRICT IMMUTABLE;
+DO $$
+DECLARE
+    pgversion TEXT;
+BEGIN
+    SELECT current_setting('server_version_num') INTO pgversion;
+    IF pgversion >= '90500' THEN
+        CREATE FUNCTION pglz_compress_bytea(bytea)
+        RETURNS bytea
+        AS 'MODULE_PATHNAME', 'pglz_compress_bytea'
+        LANGUAGE C STRICT IMMUTABLE;
+    END IF;
+END;
+$$;
 
-CREATE FUNCTION pglz_decompress(bytea)
-RETURNS text
-AS 'MODULE_PATHNAME', 'pglz_decompress_text'
-LANGUAGE C STRICT IMMUTABLE;
+DO $$
+DECLARE
+    pgversion TEXT;
+BEGIN
+    SELECT current_setting('server_version_num') INTO pgversion;
+    IF pgversion >= '90500' THEN
+        CREATE FUNCTION pglz_decompress(bytea)
+        RETURNS text
+        AS 'MODULE_PATHNAME', 'pglz_decompress_text'
+        LANGUAGE C STRICT IMMUTABLE;
+    END IF;
+END;
+$$;
 
-CREATE FUNCTION pglz_decompress_bytea(bytea)
-RETURNS bytea
-AS 'MODULE_PATHNAME', 'pglz_decompress_bytea'
-LANGUAGE C STRICT IMMUTABLE;
+DO $$
+DECLARE
+    pgversion TEXT;
+BEGIN
+    SELECT current_setting('server_version_num') INTO pgversion;
+    IF pgversion >= '90500' THEN
+        CREATE FUNCTION pglz_decompress_bytea(bytea)
+        RETURNS bytea
+        AS 'MODULE_PATHNAME', 'pglz_decompress_bytea'
+        LANGUAGE C STRICT IMMUTABLE;
+    END IF;
+END;
+$$;

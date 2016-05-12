@@ -6,6 +6,9 @@ DATA = pg_cheat_funcs--1.0.sql
 
 REGRESS = pg_cheat_funcs
 
+MAJORVERSION_INT = $(shell echo $(MAJORVERSION) | tr -d .)
+REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 95 ]; then echo pglz_compress; fi)
+
 PGFILEDESC = "pg_cheat_funcs - provides cheat (but useful) functions"
 
 ifdef USE_PGXS

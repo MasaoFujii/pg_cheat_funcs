@@ -1,0 +1,31 @@
+CREATE EXTENSION pg_cheat_funcs;
+\pset null '(null)'
+SELECT lz, aa, pglz_decompress(lz), aa::bytea, pglz_decompress_bytea(lz)
+FROM (SELECT aa, pglz_compress(aa) lz FROM repeat('A', 2) aa) hoge;
+       lz       | aa | pglz_decompress |   aa   | pglz_decompress_bytea 
+----------------+----+-----------------+--------+-----------------------
+ \x020000004141 | AA | AA              | \x4141 | \x4141
+(1 row)
+
+SELECT lz, aa, pglz_decompress(lz), aa::bytea, pglz_decompress_bytea(lz)
+FROM (SELECT aa, pglz_compress(aa) lz FROM repeat('A', 32) aa) hoge;
+          lz          |                aa                |         pglz_decompress          |                                 aa                                 |                       pglz_decompress_bytea                        
+----------------------+----------------------------------+----------------------------------+--------------------------------------------------------------------+--------------------------------------------------------------------
+ \x2000004002410f010d | AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA | AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA | \x4141414141414141414141414141414141414141414141414141414141414141 | \x4141414141414141414141414141414141414141414141414141414141414141
+(1 row)
+
+SELECT lz, aa, pglz_decompress_bytea(lz), pglz_decompress(lz)
+FROM (SELECT aa::bytea, pglz_compress_bytea(aa::bytea) lz FROM repeat('A', 2) aa) hoge;
+       lz       |   aa   | pglz_decompress_bytea | pglz_decompress 
+----------------+--------+-----------------------+-----------------
+ \x020000004141 | \x4141 | \x4141                | AA
+(1 row)
+
+SELECT lz, aa, pglz_decompress_bytea(lz), pglz_decompress(lz)
+FROM (SELECT aa::bytea, pglz_compress_bytea(aa::bytea) lz FROM repeat('A', 32) aa) hoge;
+          lz          |                                 aa                                 |                       pglz_decompress_bytea                        |         pglz_decompress          
+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------+----------------------------------
+ \x2000004002410f010d | \x4141414141414141414141414141414141414141414141414141414141414141 | \x4141414141414141414141414141414141414141414141414141414141414141 | AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+(1 row)
+
+DROP EXTENSION pg_cheat_funcs;

@@ -13,7 +13,9 @@
 #include "access/xlog_internal.h"
 #include "access/transam.h"
 #include "catalog/pg_type.h"
+#if PG_VERSION_NUM >= 90500
 #include "common/pg_lzcompress.h"
+#endif
 #include "funcapi.h"
 #include "miscadmin.h"
 #include "replication/walreceiver.h"
@@ -33,6 +35,7 @@ static bool	pgcf_log_memory_context = false;
 /* Saved hook values in case of unload */
 static ExecutorEnd_hook_type prev_ExecutorEnd = NULL;
 
+#if PG_VERSION_NUM >= 90500
 /* The information at the start of the compressed data */
 typedef struct pglz_header
 {
@@ -50,6 +53,15 @@ typedef struct pglz_header
 #define PGLZ_IS_COMPRESSED(ptr) \
 	((((pglz_header *) (ptr))->rawsize & 0xC0000000) == 0x40000000)
 
+PG_FUNCTION_INFO_V1(pglz_compress_text);
+PG_FUNCTION_INFO_V1(pglz_compress_bytea);
+PG_FUNCTION_INFO_V1(pglz_decompress_text);
+PG_FUNCTION_INFO_V1(pglz_decompress_bytea);
+
+static struct varlena *PGLZCompress(struct varlena *source);
+static struct varlena *PGLZDecompress(struct varlena *source);
+#endif	/* PG_VERSION_NUM >= 90500 */
+
 /* pg_stat_get_memory_context function is available only in 9.6 or later */
 #if PG_VERSION_NUM >= 90600
 PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
@@ -60,10 +72,6 @@ PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
-PG_FUNCTION_INFO_V1(pglz_compress_text);
-PG_FUNCTION_INFO_V1(pglz_compress_bytea);
-PG_FUNCTION_INFO_V1(pglz_decompress_text);
-PG_FUNCTION_INFO_V1(pglz_decompress_bytea);
 
 void		_PG_init(void);
 void		_PG_fini(void);
@@ -80,8 +88,6 @@ static void PrintMemoryContextStats(MemoryContext context, int level);
 static int GetSignalByName(char *signame);
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
-static struct varlena *PGLZCompress(struct varlena *source);
-static struct varlena *PGLZDecompress(struct varlena *source);
 
 /*
  * Module load callback
@@ -495,6 +501,7 @@ pg_show_primary_conninfo(PG_FUNCTION_ARGS)
 	PG_RETURN_TEXT_P(cstring_to_text(conninfo));
 }
 
+#if PG_VERSION_NUM >= 90500
 /*
  * Create a compressed version of a text datum
  */
@@ -598,3 +605,4 @@ PGLZDecompress(struct varlena *source)
 
 	return dest;
 }
+#endif	/* PG_VERSION_NUM >= 90500 */
