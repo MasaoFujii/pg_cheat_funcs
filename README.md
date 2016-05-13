@@ -121,6 +121,15 @@ For details of primary_conninfo parameter, please see [PostgreSQL document](http
 ### integer pg_postmaster_pid()
 Return the Process ID of the postmaster process.
 
+### bigint pg_file_write_binary(filepath text, data bytea)
+Write bytea data to the file.
+This function creates the file if it does not exist,
+and truncates it to zero length otherwise.
+Then this function writes the bytea data from the beginning of the file,
+and returns the number of bytes written.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### bytea pglz_compress(text)
 Create and return a compressed version of text data.
 This function uses PGLZ (an implementation of LZ compression for PostgreSQL)

@@ -80,6 +80,12 @@ RETURNS integer
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT STABLE;
 
+CREATE FUNCTION pg_file_write_binary(text, bytea)
+RETURNS bigint
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT VOLATILE;
+REVOKE ALL ON FUNCTION pg_file_write_binary(text, bytea) FROM PUBLIC;
+
 /* PGLZ compression functions are available only in 9.5 or later */
 DO $$
 DECLARE

@@ -81,6 +81,7 @@ PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
+PG_FUNCTION_INFO_V1(pg_file_write_binary);
 
 /*
  * The function prototypes are created as a part of PG_FUNCTION_INFO_V1
@@ -94,6 +95,7 @@ Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
 Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
+Datum pg_file_write_binary(PG_FUNCTION_ARGS);
 #endif
 
 void		_PG_init(void);
@@ -535,6 +537,41 @@ Datum
 pg_postmaster_pid(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_INT32(PostmasterPid);
+}
+
+/*
+ * Write bytea data to the file.
+ */
+Datum
+pg_file_write_binary(PG_FUNCTION_ARGS)
+{
+	FILE	   *f;
+	char	   *filename;
+	bytea	   *data;
+	int64		count = 0;
+
+	filename = text_to_cstring(PG_GETARG_TEXT_P(0));
+	canonicalize_path(filename);
+	data = PG_GETARG_BYTEA_P(1);
+
+	if (!(f = fopen(filename, "wb")))
+		ereport(ERROR,
+				(errcode_for_file_access(),
+				 errmsg("could not open file \"%s\" for writing: %m",
+						filename)));
+
+	if (VARSIZE(data) != 0)
+	{
+		count = fwrite(VARDATA(data), 1, VARSIZE(data) - VARHDRSZ, f);
+
+		if (count != VARSIZE(data) - VARHDRSZ)
+			ereport(ERROR,
+					(errcode_for_file_access(),
+					 errmsg("could not write file \"%s\": %m", filename)));
+	}
+	fclose(f);
+
+	PG_RETURN_INT64(count);
 }
 
 #if PG_VERSION_NUM >= 90500
