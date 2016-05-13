@@ -130,7 +130,7 @@ and returns the number of bytes written.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
-### bytea pglz_compress(text)
+### bytea pglz_compress(data text)
 Create and return a compressed version of text data.
 This function uses PGLZ (an implementation of LZ compression for PostgreSQL)
 for the compression.
@@ -143,7 +143,7 @@ The bytea data that this function returns needs to be decompressed
 by using pg_lz_decompress() to obtain the original text data.
 This function is available only in PostgreSQL 9.5 or later.
 
-### bytea pglz_compress_bytea(bytea)
+### bytea pglz_compress_bytea(data bytea)
 Create and return a compressed version of bytea data.
 This function uses PGLZ (an implementation of LZ compression for PostgreSQL)
 for the compression.
@@ -156,14 +156,14 @@ The bytea data that this function returns needs to be decompressed
 by using pg_lz_decompress_bytea() to obtain the original bytea data.
 This function is available only in PostgreSQL 9.5 or later.
 
-### text pglz_decompress(bytea)
+### text pglz_decompress(data bytea)
 Decompress a compressed version of bytea data into text.
 Note that the input of this function must be the bytea data that
 pg_lz_compress() or pg_lz_compress_bytea() returned.
 Otherwise this function may return a corrupted data.
 This function is available only in PostgreSQL 9.5 or later.
 
-### bytea pglz_decompress_bytea(bytea)
+### bytea pglz_decompress_bytea(data bytea)
 Decompress a compressed version of bytea data into bytea.
 Note that the input of this function must be the bytea data that
 pg_lz_compress() or pg_lz_compress_bytea() returned.
