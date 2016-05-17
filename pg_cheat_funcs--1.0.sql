@@ -86,6 +86,11 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_file_write_binary(text, bytea) FROM PUBLIC;
 
+CREATE FUNCTION pg_chr(integer)
+RETURNS text
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT IMMUTABLE;
+
 /* PGLZ compression functions are available only in 9.5 or later */
 DO $$
 DECLARE

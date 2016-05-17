@@ -82,6 +82,7 @@ PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
+PG_FUNCTION_INFO_V1(pg_chr);
 
 /*
  * The function prototypes are created as a part of PG_FUNCTION_INFO_V1
@@ -96,6 +97,7 @@ Datum pg_xid_assignment(PG_FUNCTION_ARGS);
 Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
+Datum pg_chr(PG_FUNCTION_ARGS);
 #endif
 
 void		_PG_init(void);
@@ -572,6 +574,27 @@ pg_file_write_binary(PG_FUNCTION_ARGS)
 	fclose(f);
 
 	PG_RETURN_INT64(count);
+}
+
+/*
+ * Return the character with the given code.
+ */
+Datum
+pg_chr(PG_FUNCTION_ARGS)
+{
+	Datum	res;
+
+	PG_TRY();
+	{
+		res = chr(fcinfo);
+	}
+	PG_CATCH();
+	{
+		PG_RETURN_NULL();
+	}
+	PG_END_TRY();
+
+	PG_RETURN_DATUM(res);
 }
 
 #if PG_VERSION_NUM >= 90500
