@@ -35,7 +35,7 @@ script:
    - make USE_PGXS=1 PG_CONFIG=${PGHOME}/bin/pg_config installcheck
 
 after_script:
-   - if [ -f regression.diff ]; then cat regression.diff; fi
+   - if [ -f regression.diffs ]; then cat regression.diffs; fi
    - pg_ctl -D ${PGDATA} stop
 
 notifications:
