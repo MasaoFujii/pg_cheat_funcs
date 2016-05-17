@@ -28,4 +28,20 @@ SELECT pg_chr(2000000);
  (null)
 (1 row)
 
+SELECT pg_chr(code) FROM generate_series(57000, 57010) code;
+ pg_chr 
+--------
+ (null)
+ (null)
+ (null)
+ (null)
+ (null)
+ (null)
+ (null)
+ (null)
+ (null)
+ (null)
+ (null)
+(11 rows)
+
 DROP EXTENSION pg_cheat_funcs;

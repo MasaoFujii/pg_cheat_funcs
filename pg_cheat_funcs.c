@@ -590,6 +590,7 @@ pg_chr(PG_FUNCTION_ARGS)
 	}
 	PG_CATCH();
 	{
+		FlushErrorState();
 		PG_RETURN_NULL();
 	}
 	PG_END_TRY();

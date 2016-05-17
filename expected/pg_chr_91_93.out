@@ -37,4 +37,20 @@ SELECT pg_chr(2000000);
  
 (1 row)
 
+SELECT pg_chr(code) FROM generate_series(57000, 57010) code;
+ pg_chr 
+--------
+ íº¨
+ íº©
+ íºª
+ íº«
+ íº¬
+ íº­
+ íº®
+ íº¯
+ íº°
+ íº±
+ íº²
+(11 rows)
+
 DROP EXTENSION pg_cheat_funcs;
