@@ -8,9 +8,7 @@ SELECT pg_signal_process(pg_postmaster_pid(), 'HUP');
 
 SELECT chr(88) = pg_chr(88);
 SELECT chr(12354) = pg_chr(12354);
-SELECT chr(57000);
 SELECT pg_chr(57000);
-SELECT chr(2000000);
 SELECT pg_chr(2000000);
 
 DROP EXTENSION pg_cheat_funcs;

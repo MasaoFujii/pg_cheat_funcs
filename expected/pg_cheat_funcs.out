@@ -24,20 +24,16 @@ SELECT chr(12354) = pg_chr(12354);
  t
 (1 row)
 
-SELECT chr(57000);
-ERROR:  requested character not valid for encoding: 57000
 SELECT pg_chr(57000);
  pg_chr 
 --------
- (null)
+ íº¨
 (1 row)
 
-SELECT chr(2000000);
-ERROR:  requested character too large for encoding: 2000000
 SELECT pg_chr(2000000);
  pg_chr 
 --------
- (null)
+ 
 (1 row)
 
 DROP EXTENSION pg_cheat_funcs;
