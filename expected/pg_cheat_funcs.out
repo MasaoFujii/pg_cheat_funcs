@@ -12,28 +12,4 @@ SELECT pg_signal_process(pg_postmaster_pid(), 'HUP');
  
 (1 row)
 
-SELECT chr(88) = pg_chr(88);
- ?column? 
-----------
- t
-(1 row)
-
-SELECT chr(12354) = pg_chr(12354);
- ?column? 
-----------
- t
-(1 row)
-
-SELECT pg_chr(57000);
- pg_chr 
---------
- íº¨
-(1 row)
-
-SELECT pg_chr(2000000);
- pg_chr 
---------
- 
-(1 row)
-
 DROP EXTENSION pg_cheat_funcs;

@@ -8,6 +8,7 @@ REGRESS = pg_cheat_funcs
 
 MAJORVERSION_INT = $(shell echo $(MAJORVERSION) | tr -d .)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 95 ]; then echo pglz_compress; fi)
+REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 94 ]; then echo pg_chr; else echo pg_chr_91_93; fi)
 
 PGFILEDESC = "pg_cheat_funcs - provides cheat (but useful) functions"
 

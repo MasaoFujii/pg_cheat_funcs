@@ -1,0 +1,40 @@
+\i sql/pg_chr.sql
+CREATE EXTENSION pg_cheat_funcs;
+\pset null '(null)'
+SELECT chr(88) = pg_chr(88);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT chr(12354) = pg_chr(12354);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT chr(57000);
+ chr 
+-----
+ íº¨
+(1 row)
+
+SELECT pg_chr(57000);
+ pg_chr 
+--------
+ íº¨
+(1 row)
+
+SELECT chr(2000000);
+ chr 
+-----
+ 
+(1 row)
+
+SELECT pg_chr(2000000);
+ pg_chr 
+--------
+ 
+(1 row)
+
+DROP EXTENSION pg_cheat_funcs;
