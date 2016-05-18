@@ -130,6 +130,9 @@ and returns the number of bytes written.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### text pg_text_to_hex(str text)
+Convert text to its equivalent hexadecimal representation.
+
 ### text pg_chr(code integer)
 Return the character with the given code.
 This function is almost the same as chr() which PostgreSQL core provides.

@@ -84,6 +84,7 @@ PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
+PG_FUNCTION_INFO_V1(pg_text_to_hex);
 PG_FUNCTION_INFO_V1(pg_chr);
 PG_FUNCTION_INFO_V1(pg_eucjp);
 
@@ -100,6 +101,7 @@ Datum pg_xid_assignment(PG_FUNCTION_ARGS);
 Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
+Datum pg_text_to_hex(PG_FUNCTION_ARGS);
 Datum pg_chr(PG_FUNCTION_ARGS);
 Datum pg_eucjp(PG_FUNCTION_ARGS);
 #endif
@@ -579,6 +581,25 @@ pg_file_write_binary(PG_FUNCTION_ARGS)
 	fclose(f);
 
 	PG_RETURN_INT64(count);
+}
+
+/*
+ * Convert text to its equivalent hexadecimal representation.
+ */
+Datum
+pg_text_to_hex(PG_FUNCTION_ARGS)
+{
+	text		*str = PG_GETARG_TEXT_P(0);
+	char		*in = text_to_cstring(str);
+	int		len = VARSIZE(str) - VARHDRSZ;
+	int		i;
+	char		*buf;
+
+	buf = (char *) palloc(len * 2 + 1);
+	for (i = 0; i < len; i++, in++)
+		sprintf(buf + i * 2, "%2x", (uint8) *in);
+
+	PG_RETURN_TEXT_P(cstring_to_text(buf));
 }
 
 /*
