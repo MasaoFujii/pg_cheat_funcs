@@ -24,3 +24,6 @@ SELECT pg_eucjp('x8f', 'xa0', 'xe0');
 SELECT pg_eucjp('x8f', 'xa2', 'xff');
 
 DROP EXTENSION pg_cheat_funcs;
+
+\c contrib_regression
+DROP DATABASE regtest_cheat_funcs_eucjp;

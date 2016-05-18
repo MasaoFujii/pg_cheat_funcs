@@ -1,5 +1,4 @@
 CREATE DATABASE regtest_cheat_funcs_eucjp ENCODING 'EUC_JP' TEMPLATE template0;
-ERROR:  database "regtest_cheat_funcs_eucjp" already exists
 \c regtest_cheat_funcs_eucjp
 SET client_encoding TO 'EUC_JP';
 CREATE EXTENSION pg_cheat_funcs;
@@ -77,3 +76,5 @@ SELECT pg_eucjp('x8f', 'xa2', 'xff');
 (1 row)
 
 DROP EXTENSION pg_cheat_funcs;
+\c contrib_regression
+DROP DATABASE regtest_cheat_funcs_eucjp;
