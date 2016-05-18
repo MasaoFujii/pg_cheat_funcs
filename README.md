@@ -133,6 +133,9 @@ but other users can be granted EXECUTE to run the function.
 ### text pg_text_to_hex(str text)
 Convert text to its equivalent hexadecimal representation.
 
+### text pg_hex_to_text(hex text)
+Convert hexadecimal representation to its equivalent text.
+
 ### text pg_chr(code integer)
 Return the character with the given code.
 This function is almost the same as chr() which PostgreSQL core provides.

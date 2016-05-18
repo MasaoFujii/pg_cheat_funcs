@@ -85,6 +85,7 @@ PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
 PG_FUNCTION_INFO_V1(pg_text_to_hex);
+PG_FUNCTION_INFO_V1(pg_hex_to_text);
 PG_FUNCTION_INFO_V1(pg_chr);
 PG_FUNCTION_INFO_V1(pg_eucjp);
 
@@ -102,6 +103,7 @@ Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
 Datum pg_text_to_hex(PG_FUNCTION_ARGS);
+Datum pg_hex_to_text(PG_FUNCTION_ARGS);
 Datum pg_chr(PG_FUNCTION_ARGS);
 Datum pg_eucjp(PG_FUNCTION_ARGS);
 #endif
@@ -590,7 +592,7 @@ Datum
 pg_text_to_hex(PG_FUNCTION_ARGS)
 {
 	text		*s = PG_GETARG_TEXT_P(0);
-	char	*sp = VARDATA(s);
+	uint8	*sp = (uint8 *) VARDATA(s);
 	int		len = VARSIZE(s) - VARHDRSZ;
 	int		i;
 	char	*result;
@@ -602,10 +604,55 @@ pg_text_to_hex(PG_FUNCTION_ARGS)
 	r = result;
 	for (i = 0; i < len; i++, sp++)
 	{
-		*r++ = HEXDIG(((uint8) *sp) >> 4);
-		*r++ = HEXDIG(((uint8) *sp) & 0xF);
+		*r++ = HEXDIG((*sp) >> 4);
+		*r++ = HEXDIG((*sp) & 0xF);
 	}
 	*r = '\0';
+
+	PG_RETURN_TEXT_P(cstring_to_text(result));
+}
+
+/*
+ * Convert hexadecimal representation to its equivalent text.
+ */
+Datum
+pg_hex_to_text(PG_FUNCTION_ARGS)
+{
+	text		*s = PG_GETARG_TEXT_P(0);
+	uint8	*sp = (uint8 *) VARDATA(s);
+	int		len = VARSIZE(s) - VARHDRSZ;
+	int		i;
+	int		bc;
+	char	*result;
+	char	*r;
+	uint8	x;
+
+	result = (char *) palloc0(len / 2 + 1 + 1);
+	r = result;
+	for (bc = 0, i = 0; i < len; i++, sp++)
+	{
+		if (*sp >= '0' && *sp <= '9')
+			x = (uint8) (*sp - '0');
+		else if (*sp >= 'A' && *sp <= 'F')
+			x = (uint8) (*sp - 'A') + 10;
+		else if (*sp >= 'a' && *sp <= 'f')
+			x = (uint8) (*sp - 'a') + 10;
+		else
+			ereport(ERROR,
+					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+					 errmsg("\"%c\" is not a valid hexadecimal digit",
+							*sp)));
+		if (bc)
+		{
+			*r++ |= x;
+			bc = 0;
+		}
+		else
+		{
+			*r = x << 4;
+			bc = 1;
+		}
+	}
 
 	PG_RETURN_TEXT_P(cstring_to_text(result));
 }
