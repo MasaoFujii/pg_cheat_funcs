@@ -130,7 +130,7 @@ and returns the number of bytes written.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
-### text pg_chr(integer)
+### text pg_chr(code integer)
 Return the character with the given code.
 This function is almost the same as chr() which PostgreSQL core provides.
 The difference of them is that this function returns NULL instead of
@@ -139,6 +139,20 @@ Note that valid Unicode code point stops at U+10FFFF (1114111),
 even though 4-byte UTF8 sequences can hold values up to U+1FFFFF.
 Therefore this function returns NULL whenever the given code is larger
 than 1114111.
+
+### text pg_eucjp(code1 bit(8), code2 bit(8), code3 bit(8))
+Return EUC_JP character with the given codes.
+The following table shows the valid combination of the codes.
+
+| code1     | code2     | code3     |
+|-----------|-----------|-----------|
+| x00 - x7f | -         | -         |
+| x8e       | xa1 - xdf | -         |
+| xa1 - xfe | xa1 - xfe | -         |
+| x8f       | xa1 - xfe | xa1 - xfe |
+
+This function returns NULL when the requested character is invalid for EUC_JP.
+This function can be executed only under EUC_JP database encoding.
 
 ### bytea pglz_compress(data text)
 Create and return a compressed version of text data.

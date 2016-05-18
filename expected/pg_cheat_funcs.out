@@ -12,4 +12,7 @@ SELECT pg_signal_process(pg_postmaster_pid(), 'HUP');
  
 (1 row)
 
+SELECT pg_eucjp('xa4', 'xa2');
+ERROR:  database encoding is UTF8
+HINT:  pg_eucjp() can be executed only under EUC_JP encoding.
 DROP EXTENSION pg_cheat_funcs;

@@ -19,6 +19,7 @@
 #include "common/pg_lzcompress.h"
 #endif
 #include "funcapi.h"
+#include "mb/pg_wchar.h"
 #include "miscadmin.h"
 #include "replication/walreceiver.h"
 #include "replication/walsender.h"
@@ -32,6 +33,7 @@
 #if PG_VERSION_NUM >= 90400
 #include "utils/pg_lsn.h"
 #endif
+#include "utils/varbit.h"
 
 PG_MODULE_MAGIC;
 
@@ -83,6 +85,7 @@ PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
 PG_FUNCTION_INFO_V1(pg_chr);
+PG_FUNCTION_INFO_V1(pg_eucjp);
 
 /*
  * The function prototypes are created as a part of PG_FUNCTION_INFO_V1
@@ -98,6 +101,7 @@ Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
 Datum pg_chr(PG_FUNCTION_ARGS);
+Datum pg_eucjp(PG_FUNCTION_ARGS);
 #endif
 
 void		_PG_init(void);
@@ -115,6 +119,7 @@ static void PrintMemoryContextStats(MemoryContext context, int level);
 static int GetSignalByName(char *signame);
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
+static text *Bits8GetText(bits8 b1, bits8 b2, bits8 c3, int len);
 
 /*
  * Module load callback
@@ -596,6 +601,81 @@ pg_chr(PG_FUNCTION_ARGS)
 	PG_END_TRY();
 
 	PG_RETURN_DATUM(res);
+}
+
+/*
+ * Return text representation for three bits8.
+ */
+static text *
+Bits8GetText(bits8 b1, bits8 b2, bits8 b3, int len)
+{
+	text		*result;
+	bits8	*tmp;
+
+	result = (text *) palloc(VARHDRSZ + len);
+	SET_VARSIZE(result, VARHDRSZ + len);
+	tmp = (bits8 *) VARDATA(result);
+
+	tmp[0] = b1;
+	if (len > 1)
+		tmp[1] = b2;
+	if (len > 2)
+		tmp[2] = b3;
+
+	return result;
+}
+
+/*
+ * Return EUC-JP character with the given codes.
+ */
+Datum
+pg_eucjp(PG_FUNCTION_ARGS)
+{
+	bits8	b1 = *(VARBITS(PG_GETARG_VARBIT_P(0)));
+	bits8	b2 = *(VARBITS(PG_GETARG_VARBIT_P(1)));
+	bits8	b3 = *(VARBITS(PG_GETARG_VARBIT_P(2)));
+	int		len;
+
+	if (GetDatabaseEncoding() != PG_EUC_JP)
+		ereport(ERROR,
+				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+				 errmsg("database encoding is %s", GetDatabaseEncodingName()),
+		 errhint("pg_eucjp() can be executed only under EUC_JP encoding.")));
+
+#define IS_EUC_RANGE_VALID(b)	((b) >= 0xa1 && (b) <= 0xfe)
+
+	switch (b1)
+	{
+		case SS2:				/* JIS X 0201 */
+			if (b2 < 0xa1 || b2 > 0xdf || b3 != 0x00)
+				PG_RETURN_NULL();
+			len = 2;
+			break;
+
+		case SS3:				/* JIS X 0212 */
+			if (!IS_EUC_RANGE_VALID(b2) || !IS_EUC_RANGE_VALID(b3))
+				PG_RETURN_NULL();
+			len = 3;
+			break;
+
+		default:
+			if (IS_HIGHBIT_SET(b1))		/* JIS X 0208? */
+			{
+				if (!IS_EUC_RANGE_VALID(b1) || !IS_EUC_RANGE_VALID(b2) ||
+					b3 != 0x00)
+					PG_RETURN_NULL();
+				len = 2;
+			}
+			else			/* must be ASCII */
+			{
+				if (b2 != 0x00 || b3 != 0x00)
+					PG_RETURN_NULL();
+				len = 1;
+			}
+			break;
+	}
+
+	PG_RETURN_TEXT_P(Bits8GetText(b1, b2, b3, len));
 }
 
 #if PG_VERSION_NUM >= 90500

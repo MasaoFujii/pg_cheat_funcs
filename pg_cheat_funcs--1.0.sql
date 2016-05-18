@@ -91,6 +91,11 @@ RETURNS text
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 
+CREATE FUNCTION pg_eucjp(bit(8), bit(8) DEFAULT 'x00', bit(8) DEFAULT 'x00')
+RETURNS text
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT IMMUTABLE;
+
 /* PGLZ compression functions are available only in 9.5 or later */
 DO $$
 DECLARE

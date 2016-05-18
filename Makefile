@@ -4,7 +4,7 @@ OBJS = pg_cheat_funcs.o
 EXTENSION = pg_cheat_funcs
 DATA = pg_cheat_funcs--1.0.sql
 
-REGRESS = pg_cheat_funcs
+REGRESS = pg_cheat_funcs pg_eucjp
 
 MAJORVERSION_INT = $(shell echo $(MAJORVERSION) | tr -d .)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 95 ]; then echo pglz_compress; fi)

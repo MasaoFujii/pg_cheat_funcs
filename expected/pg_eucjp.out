@@ -1,0 +1,79 @@
+CREATE DATABASE regtest_cheat_funcs_eucjp ENCODING 'EUC_JP' TEMPLATE template0;
+ERROR:  database "regtest_cheat_funcs_eucjp" already exists
+\c regtest_cheat_funcs_eucjp
+SET client_encoding TO 'EUC_JP';
+CREATE EXTENSION pg_cheat_funcs;
+\pset null '(null)'
+SELECT pg_eucjp(65::bit(8));
+ pg_eucjp 
+----------
+ A
+(1 row)
+
+SELECT pg_eucjp(65::bit(8), 65::bit(8));
+ pg_eucjp 
+----------
+ (null)
+(1 row)
+
+SELECT pg_eucjp('xa4', 'xca');
+ pg_eucjp 
+----------
+ § 
+(1 row)
+
+SELECT pg_eucjp('xa4', 'xca', 'xca');
+ pg_eucjp 
+----------
+ (null)
+(1 row)
+
+SELECT pg_eucjp('xa0', 'xca');
+ pg_eucjp 
+----------
+ (null)
+(1 row)
+
+SELECT pg_eucjp('xa4', 'xff');
+ pg_eucjp 
+----------
+ (null)
+(1 row)
+
+SELECT pg_eucjp('x8e', 'xc5');
+ pg_eucjp 
+----------
+ é≈
+(1 row)
+
+SELECT pg_eucjp('x8e', 'xc5', 'xc5');
+ pg_eucjp 
+----------
+ (null)
+(1 row)
+
+SELECT pg_eucjp('x8e', 'xe0');
+ pg_eucjp 
+----------
+ (null)
+(1 row)
+
+SELECT pg_eucjp('x8f', 'xa2', 'xe0');
+ pg_eucjp 
+----------
+ è¢‡
+(1 row)
+
+SELECT pg_eucjp('x8f', 'xa0', 'xe0');
+ pg_eucjp 
+----------
+ (null)
+(1 row)
+
+SELECT pg_eucjp('x8f', 'xa2', 'xff');
+ pg_eucjp 
+----------
+ (null)
+(1 row)
+
+DROP EXTENSION pg_cheat_funcs;
