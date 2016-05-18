@@ -31,7 +31,7 @@ this extension provides.
 
     =# CREATE EXTENSION pg_cheat_funcs;
 
-### record pg_stat_get_memory_context()
+### SETOF record pg_stat_get_memory_context()
 Return statistics about all memory contexts.
 This function returns a record, shown in the table below.
 
@@ -94,7 +94,7 @@ e.g., which doesn't cause a transaction ID wraparound problem.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
-### record pg_xid_assignment()
+### SETOF record pg_xid_assignment()
 Return information about transaction ID assignment state.
 This function returns a record, shown in the table below.
 
@@ -152,6 +152,10 @@ The following table shows the valid combination of the codes.
 | x8f       | xa1 - xfe | xa1 - xfe |
 
 This function returns NULL when the requested character is invalid for EUC_JP.
+This function can be executed only under EUC_JP database encoding.
+
+### SETOF record pg_eucjp_map()
+Return all valid EUC_JP characters.
 This function can be executed only under EUC_JP database encoding.
 
 ### bytea pglz_compress(data text)

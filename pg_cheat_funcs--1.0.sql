@@ -96,6 +96,24 @@ RETURNS text
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 
+CREATE FUNCTION pg_eucjp_map(OUT code1 text, OUT code2 text,
+    OUT code3 text, OUT eucjp text) RETURNS SETOF record AS $$
+BEGIN
+    RETURN QUERY
+        SELECT CASE WHEN c1 <= 15 THEN 'x0' ELSE 'x' END || to_hex(c1),
+        'x00'::text, 'x00'::text, pg_eucjp(c1::bit(8))
+        FROM generate_series(0, 127) c1;
+    RETURN QUERY SELECT 'x8e'::text, 'x' || to_hex(c2), 'x00'::text,
+        pg_eucjp('x8e', c2::bit(8)) FROM generate_series(161, 223) c2;
+    RETURN QUERY SELECT 'x' || to_hex(c1), 'x' || to_hex(c2), 'x00'::text,
+        pg_eucjp(c1::bit(8), c2::bit(8))
+        FROM generate_series(161, 254) c1, generate_series(161, 254) c2;
+    RETURN QUERY SELECT 'x8f'::text, 'x' || to_hex(c2), 'x' || to_hex(c3),
+        pg_eucjp('x8f', c2::bit(8), c3::bit(8))
+        FROM generate_series(161, 254) c2, generate_series(161, 254) c3;
+END
+$$ LANGUAGE plpgsql IMMUTABLE;
+
 /* PGLZ compression functions are available only in 9.5 or later */
 DO $$
 DECLARE

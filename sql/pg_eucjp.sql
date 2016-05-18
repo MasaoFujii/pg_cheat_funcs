@@ -19,9 +19,15 @@ SELECT pg_eucjp('x8e', 'xc5');
 SELECT pg_eucjp('x8e', 'xc5', 'xc5');
 SELECT pg_eucjp('x8e', 'xe0');
 
-SELECT pg_eucjp('x8f', 'xa2', 'xe0');
-SELECT pg_eucjp('x8f', 'xa0', 'xe0');
+SELECT pg_eucjp('x8f', 'xa2', 'xee');
+SELECT pg_eucjp('x8f', 'xa0', 'xee');
 SELECT pg_eucjp('x8f', 'xa2', 'xff');
+
+CREATE TABLE eucjp_map(code1 text, code2 text, code3 text, eucjp text);
+INSERT INTO eucjp_map SELECT * FROM pg_eucjp_map();
+SELECT count(*) FROM eucjp_map
+    WHERE pg_eucjp(code1::bit(8), code2::bit(8), code3::bit(8)) <> eucjp;
+SELECT * FROM eucjp_map ORDER BY eucjp;
 
 DROP EXTENSION pg_cheat_funcs;
 
