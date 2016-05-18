@@ -589,17 +589,25 @@ pg_file_write_binary(PG_FUNCTION_ARGS)
 Datum
 pg_text_to_hex(PG_FUNCTION_ARGS)
 {
-	text		*str = PG_GETARG_TEXT_P(0);
-	char		*in = text_to_cstring(str);
-	int		len = VARSIZE(str) - VARHDRSZ;
+	text		*s = PG_GETARG_TEXT_P(0);
+	char	*sp = VARDATA(s);
+	int		len = VARSIZE(s) - VARHDRSZ;
 	int		i;
-	char		*buf;
+	char	*result;
+	char	*r;
 
-	buf = (char *) palloc(len * 2 + 1);
-	for (i = 0; i < len; i++, in++)
-		sprintf(buf + i * 2, "%2x", (uint8) *in);
+#define HEXDIG(z)	 ((z)<10 ? ((z)+'0') : ((z)-10+'a'))
 
-	PG_RETURN_TEXT_P(cstring_to_text(buf));
+	result = (char *) palloc(len * 2 + 1);
+	r = result;
+	for (i = 0; i < len; i++, sp++)
+	{
+		*r++ = HEXDIG(((uint8) *sp) >> 4);
+		*r++ = HEXDIG(((uint8) *sp) & 0xF);
+	}
+	*r = '\0';
+
+	PG_RETURN_TEXT_P(cstring_to_text(result));
 }
 
 /*
