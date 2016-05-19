@@ -124,6 +124,14 @@ BEGIN
 END
 $$ LANGUAGE plpgsql IMMUTABLE;
 
+CREATE FUNCTION pg_euc_jp_to_utf8(integer, integer, cstring, internal, integer)
+RETURNS void
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT VOLATILE;
+
+CREATE CONVERSION pg_euc_jp_to_utf8
+    FOR 'EUC_JP' TO 'UTF8' FROM pg_euc_jp_to_utf8;
+
 /* PGLZ compression functions are available only in 9.5 or later */
 DO $$
 DECLARE

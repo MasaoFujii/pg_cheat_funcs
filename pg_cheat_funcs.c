@@ -18,6 +18,8 @@
 #if PG_VERSION_NUM >= 90500
 #include "common/pg_lzcompress.h"
 #endif
+#include "conv/euc_jp_to_utf8.extra"
+#include "conv/euc_jp_to_utf8.map"
 #include "funcapi.h"
 #include "mb/pg_wchar.h"
 #include "miscadmin.h"
@@ -88,6 +90,7 @@ PG_FUNCTION_INFO_V1(pg_text_to_hex);
 PG_FUNCTION_INFO_V1(pg_hex_to_text);
 PG_FUNCTION_INFO_V1(pg_chr);
 PG_FUNCTION_INFO_V1(pg_eucjp);
+PG_FUNCTION_INFO_V1(pg_euc_jp_to_utf8);
 
 /*
  * The function prototypes are created as a part of PG_FUNCTION_INFO_V1
@@ -106,6 +109,7 @@ Datum pg_text_to_hex(PG_FUNCTION_ARGS);
 Datum pg_hex_to_text(PG_FUNCTION_ARGS);
 Datum pg_chr(PG_FUNCTION_ARGS);
 Datum pg_eucjp(PG_FUNCTION_ARGS);
+Datum pg_euc_jp_to_utf8(PG_FUNCTION_ARGS);
 #endif
 
 void		_PG_init(void);
@@ -752,6 +756,63 @@ pg_eucjp(PG_FUNCTION_ARGS)
 	}
 
 	PG_RETURN_TEXT_P(Bits8GetText(b1, b2, b3, len));
+}
+
+#if PG_VERSION_NUM >= 90500
+/*
+ * Comparison routine to bsearch() for local code -> UTF-8.
+ */
+static int
+compare_local_to_utf(const void *p1, const void *p2)
+{
+	uint32		v1,
+				v2;
+
+	v1 = *(const uint32 *) p1;
+	v2 = ((const pg_local_to_utf *) p2)->code;
+	return (v1 > v2) ? 1 : ((v1 == v2) ? 0 : -1);
+}
+
+/*
+ * Perform extra mapping of EUC_JP ranges to UTF-8.
+ */
+static uint32
+extra_euc_jp_to_utf8(uint32 code)
+{
+	const pg_local_to_utf *p;
+
+	p = bsearch(&code, ExtraLUmapEUC_JP, lengthof(ExtraLUmapEUC_JP),
+				sizeof(pg_local_to_utf), compare_local_to_utf);
+	return p ? p->utf : 0;
+}
+#endif		/* PG_VERSION_NUM >= 90500 */
+
+/*
+ * Convert string from EUC_JP to UTF-8.
+ */
+Datum
+pg_euc_jp_to_utf8(PG_FUNCTION_ARGS)
+{
+	unsigned char *src = (unsigned char *) PG_GETARG_CSTRING(2);
+	unsigned char *dest = (unsigned char *) PG_GETARG_CSTRING(3);
+	int			len = PG_GETARG_INT32(4);
+
+	CHECK_ENCODING_CONVERSION_ARGS(PG_EUC_JP, PG_UTF8);
+
+#if PG_VERSION_NUM >= 90500
+	LocalToUtf(src, len, dest,
+			   LUmapEUC_JP, lengthof(LUmapEUC_JP),
+			   NULL, 0,
+			   extra_euc_jp_to_utf8,
+			   PG_EUC_JP);
+#else
+	LocalToUtf(src, dest,
+			   LUmapEUC_JP, NULL,
+			   lengthof(LUmapEUC_JP), 0,
+			   PG_EUC_JP, len);
+#endif
+
+	PG_RETURN_VOID();
 }
 
 #if PG_VERSION_NUM >= 90500
