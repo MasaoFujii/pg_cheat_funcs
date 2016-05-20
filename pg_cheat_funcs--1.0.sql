@@ -106,7 +106,7 @@ RETURNS text
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 
-CREATE FUNCTION pg_eucjp_map(OUT code1 text, OUT code2 text,
+CREATE FUNCTION pg_all_eucjp(OUT code1 text, OUT code2 text,
     OUT code3 text, OUT eucjp text) RETURNS SETOF record AS $$
 BEGIN
     RETURN QUERY

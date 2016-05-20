@@ -180,7 +180,7 @@ For example, return EUC_JP character with 'a1fa' (black star):
 This function returns NULL when the requested character is invalid for EUC_JP.
 This function can be executed only under EUC_JP database encoding.
 
-### SETOF record pg_eucjp_map()
+### SETOF record pg_all_eucjp()
 Return all valid EUC_JP characters.
 This function can be executed only under EUC_JP database encoding.
 
