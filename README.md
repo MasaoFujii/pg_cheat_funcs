@@ -111,6 +111,18 @@ This function returns a record, shown in the table below.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### void pg_checkpoint(fast bool, wait bool, force bool)
+Perform a checkpoint.
+If fast is true (default), a checkpoint will finish as soon as possible.
+Otherwise, I/O required for a checkpoint will be spread out over
+a period of time, to minimize the impact on query processing.
+If wait is true (default), this function waits for a checkpoint to complete
+before returning. Otherwise, it just signals checkpointer to do it and returns.
+If force is true (default), this function forces a checkpoint even if no WAL
+activity has occurred since the last one.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### text pg_show_primary_conninfo()
 Return the current value of primary_conninfo recovery parameter.
 If it's not set yet, NULL is returned.

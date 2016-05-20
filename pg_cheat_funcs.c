@@ -23,6 +23,7 @@
 #include "funcapi.h"
 #include "mb/pg_wchar.h"
 #include "miscadmin.h"
+#include "postmaster/bgwriter.h"
 #include "replication/walreceiver.h"
 #include "replication/walsender.h"
 #if PG_VERSION_NUM >= 90200
@@ -83,6 +84,7 @@ PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 #endif
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
+PG_FUNCTION_INFO_V1(pg_checkpoint);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
@@ -104,6 +106,7 @@ Datum pg_stat_print_memory_context(PG_FUNCTION_ARGS);
 Datum pg_signal_process(PG_FUNCTION_ARGS);
 Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
+Datum pg_checkpoint(PG_FUNCTION_ARGS);
 Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
@@ -528,6 +531,23 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 	/* Returns the record as Datum */
 	PG_RETURN_DATUM(HeapTupleGetDatum(
 						heap_form_tuple(tupdesc, values, nulls)));
+}
+
+/*
+ * Perform a checkpoint.
+ */
+Datum
+pg_checkpoint(PG_FUNCTION_ARGS)
+{
+	bool	fast = PG_GETARG_BOOL(0);
+	bool	wait = PG_GETARG_BOOL(1);
+	bool	force = PG_GETARG_BOOL(2);
+
+	RequestCheckpoint(fast ? CHECKPOINT_IMMEDIATE : 0 |
+					  wait ? CHECKPOINT_WAIT : 0 |
+					  force ? CHECKPOINT_FORCE : 0);
+
+	PG_RETURN_VOID();
 }
 
 /*
