@@ -86,6 +86,8 @@ PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
+PG_FUNCTION_INFO_V1(to_octal32);
+PG_FUNCTION_INFO_V1(to_octal64);
 PG_FUNCTION_INFO_V1(pg_text_to_hex);
 PG_FUNCTION_INFO_V1(pg_hex_to_text);
 PG_FUNCTION_INFO_V1(pg_chr);
@@ -105,6 +107,8 @@ Datum pg_xid_assignment(PG_FUNCTION_ARGS);
 Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
+Datum to_octal32(PG_FUNCTION_ARGS);
+Datum to_octal64(PG_FUNCTION_ARGS);
 Datum pg_text_to_hex(PG_FUNCTION_ARGS);
 Datum pg_hex_to_text(PG_FUNCTION_ARGS);
 Datum pg_chr(PG_FUNCTION_ARGS);
@@ -587,6 +591,55 @@ pg_file_write_binary(PG_FUNCTION_ARGS)
 	fclose(f);
 
 	PG_RETURN_INT64(count);
+}
+
+#define OCTALBASE 8
+/*
+ * Convert an int32 to a string containing a base 8 (octal) representation of
+ * the number.
+ */
+Datum
+to_octal32(PG_FUNCTION_ARGS)
+{
+    uint32      value = (uint32) PG_GETARG_INT32(0);
+    char       *ptr;
+    const char *digits = "012345678";
+    char        buf[32];        /* bigger than needed, but reasonable */
+
+    ptr = buf + sizeof(buf) - 1;
+    *ptr = '\0';
+
+    do
+    {
+        *--ptr = digits[value % OCTALBASE];
+        value /= OCTALBASE;
+    } while (ptr > buf && value);
+
+    PG_RETURN_TEXT_P(cstring_to_text(ptr));
+}
+
+/*
+ * Convert an int64 to a string containing a base 8 (octal) representation of
+ * the number.
+ */
+Datum
+to_octal64(PG_FUNCTION_ARGS)
+{
+    uint64      value = (uint64) PG_GETARG_INT64(0);
+    char       *ptr;
+    const char *digits = "012345678";
+    char        buf[32];        /* bigger than needed, but reasonable */
+
+    ptr = buf + sizeof(buf) - 1;
+    *ptr = '\0';
+
+    do
+    {
+        *--ptr = digits[value % OCTALBASE];
+        value /= OCTALBASE;
+    } while (ptr > buf && value);
+
+    PG_RETURN_TEXT_P(cstring_to_text(ptr));
 }
 
 /*

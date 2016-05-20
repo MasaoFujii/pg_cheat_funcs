@@ -10,6 +10,10 @@ SELECT pg_eucjp('xa4', 'xa2');
 
 SELECT pg_set_next_xid(next_xid) = next_xid FROM pg_xid_assignment();
 
+SELECT to_octal(num) FROM generate_series(1, 10) num;
+SELECT to_octal(2147483647::integer);
+SELECT to_octal(9223372036854775807::bigint);
+
 SELECT pg_text_to_hex('PostgreSQL');
 SELECT pg_hex_to_text('506f737467726553514c');
 SELECT pg_hex_to_text(upper('506f737467726553514c'));

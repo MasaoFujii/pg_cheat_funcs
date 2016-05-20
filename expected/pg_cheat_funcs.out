@@ -21,6 +21,33 @@ SELECT pg_set_next_xid(next_xid) = next_xid FROM pg_xid_assignment();
  t
 (1 row)
 
+SELECT to_octal(num) FROM generate_series(1, 10) num;
+ to_octal 
+----------
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 10
+ 11
+ 12
+(10 rows)
+
+SELECT to_octal(2147483647::integer);
+  to_octal   
+-------------
+ 17777777777
+(1 row)
+
+SELECT to_octal(9223372036854775807::bigint);
+       to_octal        
+-----------------------
+ 777777777777777777777
+(1 row)
+
 SELECT pg_text_to_hex('PostgreSQL');
     pg_text_to_hex    
 ----------------------
