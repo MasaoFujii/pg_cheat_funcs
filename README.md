@@ -173,7 +173,7 @@ The following table shows the valid combination of the codes.
 | xa1 - xfe | xa1 - xfe | -         |
 | x8f       | xa1 - xfe | xa1 - xfe |
 
-For example, return EUC_JP character with 'a1fa' (black star):
+For example, return EUC_JP character with 'a1fa' (BLACK STAR):
 
     =# SELECT pg_eucjp('xa1', 'xfa');
 
@@ -182,6 +182,15 @@ This function can be executed only under EUC_JP database encoding.
 
 ### SETOF record pg_all_eucjp()
 Return all valid EUC_JP characters.
+This function returns a record, shown in the table below.
+
+| Column Name | Data Type | Description                                                     |
+|-------------|-----------|-----------------------------------------------------------------|
+| code1       | text      | first byte of character                                         |
+| code2       | text      | second byte of character (x00 means non-existence of this byte) |
+| code3       | text      | third byte of character (x00 means non-existence of this byte)  |
+| eucjp       | text      | EUC_JP character                                                |
+
 This function can be executed only under EUC_JP database encoding.
 
 ### bytea pglz_compress(data text)
