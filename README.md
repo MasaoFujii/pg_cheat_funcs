@@ -173,6 +173,10 @@ The following table shows the valid combination of the codes.
 | xa1 - xfe | xa1 - xfe | -         |
 | x8f       | xa1 - xfe | xa1 - xfe |
 
+For example, return EUC_JP character with 'a1fa' (black star):
+
+    =# SELECT pg_eucjp('xa1', 'xfa');
+
 This function returns NULL when the requested character is invalid for EUC_JP.
 This function can be executed only under EUC_JP database encoding.
 
