@@ -133,8 +133,24 @@ but other users can be granted EXECUTE to run the function.
 ### text pg_text_to_hex(str text)
 Convert text to its equivalent hexadecimal representation.
 
+Here is an example of the conversion from text to hex:
+
+    =# SELECT pg_text_to_hex('PostgreSQL');
+        pg_text_to_hex    
+    ----------------------
+     506f737467726553514c
+    (1 row)
+
 ### text pg_hex_to_text(hex text)
 Convert hexadecimal representation to its equivalent text.
+
+Here is an example of the conversion from hex to text:
+
+    =# SELECT pg_hex_to_text('506f737467726553514c');
+     pg_hex_to_text 
+    ----------------
+     PostgreSQL
+    (1 row)
 
 ### text pg_chr(code integer)
 Return the character with the given code.
