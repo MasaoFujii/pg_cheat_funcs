@@ -224,6 +224,49 @@ pg_lz_compress() or pg_lz_compress_bytea() returned.
 Otherwise this function may return a corrupted data.
 This function is available only in PostgreSQL 9.5 or later.
 
+## Encoding Conversions
+
+### pg_euc_jp_to_utf8
+This is an encoding conversion from EUC_JP to UTF-8.
+It uses two conversion maps; ordinary map and extra map.
+They are defined in `conv/euc_jp_to_utf8.map` and `conv/euc_jp_to_utf8.extra`,
+respectively.
+For each character, ordinary map is consulted first.
+If no match is found, extra map is consulted next.
+If still no match, an error is raised.
+
+The content of ordinary map is the same as the map that euc_jp_to_utf8
+(default conversion map from EUC_JP to UTF-8 that PostgreSQL provides) uses.
+The extra map contains the following mapping that ordinary map doesn't have.
+
+| EUC_JP | UTF-8           | Description               |
+|--------|-----------------|---------------------------|
+| fcf1   | e285b0 (U+2170) | SMALL ROMAN NUMERAL ONE   |
+| fcf2   | e285b1 (U+2171) | SMALL ROMAN NUMERAL TWO   |
+| fcf3   | e285b2 (U+2172) | SMALL ROMAN NUMERAL THREE |
+| fcf4   | e285b3 (U+2173) | SMALL ROMAN NUMERAL FOUR  |
+| fcf5   | e285b4 (U+2174) | SMALL ROMAN NUMERAL FIVE  |
+| fcf6   | e285b5 (U+2175) | SMALL ROMAN NUMERAL SIX   |
+| fcf7   | e285b6 (U+2176) | SMALL ROMAN NUMERAL SEVEN |
+| fcf8   | e285b7 (U+2177) | SMALL ROMAN NUMERAL EIGHT |
+| fcf9   | e285b8 (U+2178) | SMALL ROMAN NUMERAL NINE  |
+| fcfa   | e285b9 (U+2179) | SMALL ROMAN NUMERAL TEN   |
+
+In order to use pg_euc_jp_to_utf8 as the default conversion from EUC_JP to
+UTF-8, its [pg_conversion](http://www.postgresql.org/docs/devel/static/catalog-pg-conversion.html).condefault
+needs to be enabled. Also condefault for euc_jp_to_utf8 (built-in conversion
+from EUC_JP to UTF-8) needs to be disabled.
+Here is an example of these catalog updates:
+
+    =# BEGIN;
+    =# UPDATE pg_conversion SET condefault = 'f' WHERE conname = 'euc_jp_to_utf8';
+    =# UPDATE pg_conversion SET condefault = 't' WHERE conname = 'pg_euc_jp_to_utf8';
+    =# COMMIT;
+
+It's possible to use the customized conversion map by modifying the map files
+directly and rebuilding pg_cheat_funcs module.
+Note that entries in a map file must be sorted in ascending order.
+
 ## Configuration Parameters
 
 Note that [shared_preload_libraries](http://www.postgresql.org/docs/devel/static/runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES)
