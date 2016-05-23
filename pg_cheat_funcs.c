@@ -30,6 +30,7 @@
 #include "replication/walsender_private.h"
 #endif
 #include "storage/lwlock.h"
+#include "storage/proc.h"
 #include "storage/procarray.h"
 #include "utils/builtins.h"
 #include "utils/memutils.h"
@@ -81,6 +82,7 @@ PG_FUNCTION_INFO_V1(pg_stat_print_memory_context);
 PG_FUNCTION_INFO_V1(pg_signal_process);
 #if PG_VERSION_NUM >= 90400
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
+PG_FUNCTION_INFO_V1(pg_stat_get_syncrep_waiters);
 #endif
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
@@ -132,6 +134,9 @@ PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
 #endif
 static void PrintMemoryContextStats(MemoryContext context, int level);
 static int GetSignalByName(char *signame);
+#if PG_VERSION_NUM >= 90400
+static const char *SyncRepGetWaitModeString(int mode);
+#endif
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
 static text *Bits8GetText(bits8 b1, bits8 b2, bits8 c3, int len);
@@ -422,6 +427,98 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
 	XLogFileName(xlogfilename, ThisTimeLineID, xlogsegno);
 
 	PG_RETURN_TEXT_P(cstring_to_text(xlogfilename));
+}
+
+/*
+ * Return statistics about all syncrep waiters.
+ */
+Datum
+pg_stat_get_syncrep_waiters(PG_FUNCTION_ARGS)
+{
+#define PG_STAT_GET_SYNCREP_WAITERS_COLS	3
+	ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
+	TupleDesc	tupdesc;
+	Tuplestorestate *tupstore;
+	MemoryContext per_query_ctx;
+	MemoryContext oldcontext;
+	int		i;
+
+	/* check to see if caller supports us returning a tuplestore */
+	if (rsinfo == NULL || !IsA(rsinfo, ReturnSetInfo))
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("set-valued function called in context that cannot accept a set")));
+	if (!(rsinfo->allowedModes & SFRM_Materialize))
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("materialize mode required, but it is not " \
+						"allowed in this context")));
+
+	/* Build a tuple descriptor for our result type */
+	if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+		elog(ERROR, "return type must be a row type");
+
+	per_query_ctx = rsinfo->econtext->ecxt_per_query_memory;
+	oldcontext = MemoryContextSwitchTo(per_query_ctx);
+
+	tupstore = tuplestore_begin_heap(true, false, work_mem);
+	rsinfo->returnMode = SFRM_Materialize;
+	rsinfo->setResult = tupstore;
+	rsinfo->setDesc = tupdesc;
+
+	MemoryContextSwitchTo(oldcontext);
+
+	LWLockAcquire(SyncRepLock, LW_SHARED);
+
+	for (i = 0; i < NUM_SYNC_REP_WAIT_MODE; i++)
+	{
+		PGPROC	   *proc = NULL;
+
+		proc = (PGPROC *) SHMQueueNext(&(WalSndCtl->SyncRepQueue[i]),
+									   &(WalSndCtl->SyncRepQueue[i]),
+									   offsetof(PGPROC, syncRepLinks));
+		while (proc)
+		{
+			Datum	values[PG_STAT_GET_SYNCREP_WAITERS_COLS];
+			bool	nulls[PG_STAT_GET_SYNCREP_WAITERS_COLS];
+
+			memset(nulls, 0, sizeof(nulls));
+			values[0] = Int32GetDatum(proc->pid);
+			values[1] = LSNGetDatum(proc->waitLSN);
+			values[2] = CStringGetTextDatum(SyncRepGetWaitModeString(i));
+			tuplestore_putvalues(tupstore, tupdesc, values, nulls);
+
+			proc = (PGPROC *) SHMQueueNext(&(WalSndCtl->SyncRepQueue[i]),
+										   &(proc->syncRepLinks),
+										   offsetof(PGPROC, syncRepLinks));
+		}
+	}
+	LWLockRelease(SyncRepLock);
+
+	/* clean up and return the tuplestore */
+	tuplestore_donestoring(tupstore);
+
+	return (Datum) 0;
+}
+
+/*
+ * Return a string constant representing the SyncRepWaitMode.
+ */
+static const char *
+SyncRepGetWaitModeString(int mode)
+{
+	switch (mode)
+	{
+		case SYNC_REP_NO_WAIT:
+			return "no wait";
+		case SYNC_REP_WAIT_WRITE:
+			return "write";
+		case SYNC_REP_WAIT_FLUSH:
+			return "flush";
+		case SYNC_REP_WAIT_APPLY:
+			return "apply";
+	}
+	return "unknown";
 }
 #endif	/* PG_VERSION_NUM >= 90400 */
 

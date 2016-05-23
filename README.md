@@ -85,6 +85,25 @@ That is, this function can return bogus WAL file name.
 For details of this conversion, please see [PostgreSQL document](http://www.postgresql.org/docs/devel/static/functions-admin.html#FUNCTIONS-ADMIN-BACKUP).
 This function is available only in PostgreSQL 9.4 or later.
 
+### SETOF record pg_stat_get_syncrep_waiters()
+Return statistics about all server processes waiting for
+synchronous replication.
+This function returns a record per server process waiting for
+synchronous replication, shown in the table below.
+
+| Column Name | Data Type | Description                          |
+|-------------|-----------|--------------------------------------|
+| pid         | integer   | Process ID of a server process       |
+| wait_lsn    | pg_lsn    | Transaction log position to wait for |
+| wait_mode   | text      | Wait mode of this server process     |
+
+Possible values of wait_mode are write, flush and apply
+(only in PostgreSQL 9.6 or later).
+
+This function is available only in PostgreSQL 9.4 or later.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### xid pg_set_next_xid(transactionid xid)
 Set and return the next transaction ID.
 Note that this function doesn't check if it's safe to assign

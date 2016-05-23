@@ -52,6 +52,22 @@ BEGIN
 END;
 $$;
 
+/* pg_stat_get_syncrep_waiters function is available only in 9.4 or later */
+DO $$
+DECLARE
+    pgversion TEXT;
+BEGIN
+    SELECT current_setting('server_version_num') INTO pgversion;
+    IF pgversion >= '90400' THEN
+        CREATE FUNCTION pg_stat_get_syncrep_waiters(OUT pid integer,
+        OUT wait_lsn pg_lsn,
+        OUT wait_mode text)
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT VOLATILE;
+    END IF;
+END;
+$$;
+
 CREATE FUNCTION pg_set_next_xid(xid)
 RETURNS xid
 AS 'MODULE_PATHNAME'
