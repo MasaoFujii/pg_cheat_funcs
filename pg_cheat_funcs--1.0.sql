@@ -64,6 +64,23 @@ BEGIN
         OUT wait_mode text)
         AS 'MODULE_PATHNAME'
         LANGUAGE C STRICT VOLATILE;
+        REVOKE ALL ON FUNCTION pg_stat_get_syncrep_waiters() FROM PUBLIC;
+    END IF;
+END;
+$$;
+
+/* pg_wait_syncrep function is available only in 9.4 or later */
+DO $$
+DECLARE
+    pgversion TEXT;
+BEGIN
+    SELECT current_setting('server_version_num') INTO pgversion;
+    IF pgversion >= '90400' THEN
+        CREATE FUNCTION pg_wait_syncrep(pg_lsn)
+        RETURNS void
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT VOLATILE;
+        REVOKE ALL ON FUNCTION pg_wait_syncrep(pg_lsn) FROM PUBLIC;
     END IF;
 END;
 $$;

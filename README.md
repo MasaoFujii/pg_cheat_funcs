@@ -104,6 +104,16 @@ This function is available only in PostgreSQL 9.4 or later.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### void pg_wait_syncrep(location pg_lsn)
+Wait for synchronous replication.
+This function waits until the given transaction log location is acknowledged
+by synchronous standbys, based on the setting of
+[synchronous_commit](http://www.postgresql.org/docs/devel/static/runtime-config-wal.html#GUC-SYNCHRONOUS-COMMIT).
+
+This function is available only in PostgreSQL 9.4 or later.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### xid pg_set_next_xid(transactionid xid)
 Set and return the next transaction ID.
 Note that this function doesn't check if it's safe to assign

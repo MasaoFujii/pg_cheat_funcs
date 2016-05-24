@@ -83,6 +83,7 @@ PG_FUNCTION_INFO_V1(pg_signal_process);
 #if PG_VERSION_NUM >= 90400
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 PG_FUNCTION_INFO_V1(pg_stat_get_syncrep_waiters);
+PG_FUNCTION_INFO_V1(pg_wait_syncrep);
 #endif
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
@@ -515,6 +516,23 @@ SyncRepGetWaitModeString(int mode)
 #endif
 	}
 	return "unknown";
+}
+
+/*
+ * Wait for synchronous replication.
+ */
+Datum
+pg_wait_syncrep(PG_FUNCTION_ARGS)
+{
+	XLogRecPtr	recptr = PG_GETARG_LSN(0);
+
+#if PG_VERSION_NUM >= 90600
+	SyncRepWaitForLSN(recptr, true);
+#else
+	SyncRepWaitForLSN(recptr);
+#endif
+
+	PG_RETURN_VOID();
 }
 #endif	/* PG_VERSION_NUM >= 90400 */
 
