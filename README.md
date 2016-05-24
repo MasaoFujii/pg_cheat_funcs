@@ -56,7 +56,7 @@ The format of log message for each memory context is:
 
     [name]: [total_bytes] total in [total_nblocks] blocks; [free_bytes] free ([free_chunks] chunks); [used_bytes] used
 
-For descriptions of the above fields, please see [pg_stat_get_memory_context()](#record-pg_stat_get_memory_context).
+For descriptions of the above fields, please see [pg_stat_get_memory_context()](#setof-record-pg_stat_get_memory_context).
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
