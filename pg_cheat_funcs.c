@@ -45,6 +45,8 @@ PG_MODULE_MAGIC;
 
 /* GUC variables */
 static bool	cheat_log_memory_context = false;
+static bool	cheat_hide_appname = false;
+static char	*cheat_hidden_appname = NULL;
 static bool	cheat_log_session_start_options = false;
 
 /* Saved hook values in case of unload */
@@ -166,6 +168,28 @@ _PG_init(void)
 							 NULL,
 							 NULL);
 
+	DefineCustomBoolVariable("pg_cheat_funcs.hide_appname",
+							 "Hide client's application_name from view.",
+							 NULL,
+							 &cheat_hide_appname,
+							 false,
+							 PGC_SIGHUP,
+							 0,
+							 NULL,
+							 NULL,
+							 NULL);
+
+	DefineCustomStringVariable("pg_cheat_funcs.hidden_appname",
+							   "Hidden client's application_name.",
+							   NULL,
+							   &cheat_hidden_appname,
+							   "",
+							   PGC_USERSET,
+							   0,
+							   NULL,
+							   NULL,
+							   NULL);
+
 	DefineCustomBoolVariable("pg_cheat_funcs.log_session_start_options",
 							 "Log options sent to the server at connection start.",
 							 NULL,
@@ -226,20 +250,52 @@ CheatClientAuthentication(Port *port, int status)
 	if (prev_ClientAuthentication)
 		prev_ClientAuthentication(port, status);
 
+	/* Hide client's application_name from view */
+	if (cheat_hide_appname)
+	{
+		List			*gucopts = port->guc_options;
+		ListCell	*cell;
+		ListCell	*prev = NULL;
+		ListCell	*next;
+
+		for (cell = list_head(gucopts); cell != NULL; cell = next)
+		{
+			char	   *name = lfirst(cell);
+			char		*value;
+
+			next = lnext(cell);
+
+			if (strcmp(name, "application_name") != 0)
+			{
+				prev = next;
+				next = lnext(next);
+				continue;
+			}
+
+			gucopts = list_delete_cell(gucopts, cell, prev);
+			cell = next;
+			next = lnext(next);
+			value = lfirst(cell);
+			SetConfigOption("pg_cheat_funcs.hidden_appname", value,
+							PGC_USERSET, PGC_S_CLIENT);
+			gucopts = list_delete_cell(gucopts, cell, prev);
+		}
+	}
+
 	/* Log options sent to the server at connection start */
 	if (cheat_log_session_start_options)
 	{
-		ListCell   *gucopts = list_head(port->guc_options);
-		while (gucopts)
+		ListCell   *cell = list_head(port->guc_options);
+		while (cell)
 		{
 			char	   *name;
 			char	   *value;
 
-			name = lfirst(gucopts);
-			gucopts = lnext(gucopts);
+			name = lfirst(cell);
+			cell = lnext(cell);
 
-			value = lfirst(gucopts);
-			gucopts = lnext(gucopts);
+			value = lfirst(cell);
+			cell = lnext(cell);
 
 			ereport(LOG,
 					(errmsg("session-start options: %s = %s", name, value)));

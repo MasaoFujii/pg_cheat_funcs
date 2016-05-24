@@ -333,6 +333,19 @@ Cause statistics about all memory contexts to be logged at the end of query exec
 For details of log format, please see [pg_stat_print_memory_context()](#void-pg_stat_print_memory_context)
 This parameter is off by default. Only superusers can change this setting.
 
+### pg_cheat_funcs.hide_appname (boolean)
+If true, client's application_name is ignored and its setting value is
+stored in pg_cheat_funcs.hidden_appname parameter.
+By default, this is set to false, so that the string that client specifies
+will be used as application_name.
+This parameter can only be set in the postgresql.conf
+file or on the server command line.
+
+### pg_cheat_funcs.hidden_appname (string)
+Report client's application_name hidden from view.
+The default is an empty string.
+Any users can change this setting.
+
 ### pg_cheat_funcs.log_session_start_options (boolean)
 Log options sent to the server at connection start.
 This parameter is off by default.
