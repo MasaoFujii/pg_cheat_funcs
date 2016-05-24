@@ -35,6 +35,12 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_signal_process(integer, text) FROM PUBLIC;
 
+CREATE FUNCTION pg_process_config_file()
+RETURNS void
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT VOLATILE;
+REVOKE ALL ON FUNCTION pg_process_config_file() FROM PUBLIC;
+
 /* pg_xlogfile_name function is available only in 9.4 or later */
 DO $$
 DECLARE

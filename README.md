@@ -72,6 +72,12 @@ For example, terminate walreceiver process:
     -- Note that pg_stat_wal_receiver view is available in 9.6 or later
     =# SELECT pg_signal_process(pid, 'TERM') FROM pg_stat_wal_receiver;
 
+### void pg_process_config_file()
+Read and process the configuration file.
+Note that, if an error occurs, it's logged with DEBUG2 level.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### text pg_xlogfile_name(location pg_lsn, recovery boolean)
 Convert transaction log location string to file name.
 This function is almost the same as pg_xlogfile_name() which PostgreSQL core provides.

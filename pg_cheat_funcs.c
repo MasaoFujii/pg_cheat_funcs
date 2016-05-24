@@ -86,6 +86,7 @@ PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
 #endif
 PG_FUNCTION_INFO_V1(pg_stat_print_memory_context);
 PG_FUNCTION_INFO_V1(pg_signal_process);
+PG_FUNCTION_INFO_V1(pg_process_config_file);
 #if PG_VERSION_NUM >= 90400
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
 PG_FUNCTION_INFO_V1(pg_stat_get_syncrep_waiters);
@@ -113,6 +114,7 @@ PG_FUNCTION_INFO_V1(pg_euc_jp_to_utf8);
 #if PG_VERSION_NUM < 90400
 Datum pg_stat_print_memory_context(PG_FUNCTION_ARGS);
 Datum pg_signal_process(PG_FUNCTION_ARGS);
+Datum pg_process_config_file(PG_FUNCTION_ARGS);
 Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
 Datum pg_checkpoint(PG_FUNCTION_ARGS);
@@ -491,6 +493,16 @@ IsWalReceiverPid(int pid)
 		return false;
 
 	return (walrcv->pid == pid);
+}
+
+/*
+ * Read and process the configuration file.
+ */
+Datum
+pg_process_config_file(PG_FUNCTION_ARGS)
+{
+	ProcessConfigFile(PGC_SIGHUP);
+	PG_RETURN_VOID();
 }
 
 #if PG_VERSION_NUM >= 90400
