@@ -509,8 +509,10 @@ SyncRepGetWaitModeString(int mode)
 			return "write";
 		case SYNC_REP_WAIT_FLUSH:
 			return "flush";
+#if PG_VERSION_NUM >= 90600
 		case SYNC_REP_WAIT_APPLY:
 			return "apply";
+#endif
 	}
 	return "unknown";
 }
