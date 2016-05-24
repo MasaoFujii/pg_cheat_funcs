@@ -21,6 +21,8 @@
 #include "conv/euc_jp_to_utf8.extra"
 #include "conv/euc_jp_to_utf8.map"
 #include "funcapi.h"
+#include "libpq/auth.h"
+#include "libpq/libpq-be.h"
 #include "mb/pg_wchar.h"
 #include "miscadmin.h"
 #include "postmaster/bgwriter.h"
@@ -42,10 +44,12 @@
 PG_MODULE_MAGIC;
 
 /* GUC variables */
-static bool	pgcf_log_memory_context = false;
+static bool	cheat_log_memory_context = false;
+static bool	cheat_log_session_start_options = false;
 
 /* Saved hook values in case of unload */
 static ExecutorEnd_hook_type prev_ExecutorEnd = NULL;
+static ClientAuthentication_hook_type prev_ClientAuthentication = NULL;
 
 #if PG_VERSION_NUM >= 90500
 /* The information at the start of the compressed data */
@@ -125,7 +129,8 @@ Datum pg_euc_jp_to_utf8(PG_FUNCTION_ARGS);
 void		_PG_init(void);
 void		_PG_fini(void);
 
-static void pgcf_ExecutorEnd(QueryDesc *queryDesc);
+static void CheatExecutorEnd(QueryDesc *queryDesc);
+static void CheatClientAuthentication(Port *port, int status);
 
 #if PG_VERSION_NUM >= 90600
 static void
@@ -153,9 +158,24 @@ _PG_init(void)
 	DefineCustomBoolVariable("pg_cheat_funcs.log_memory_context",
 							 "Cause statistics about all memory contexts to be logged.",
 							 NULL,
-							 &pgcf_log_memory_context,
+							 &cheat_log_memory_context,
 							 false,
 							 PGC_SUSET,
+							 0,
+							 NULL,
+							 NULL,
+							 NULL);
+
+	DefineCustomBoolVariable("pg_cheat_funcs.log_session_start_options",
+							 "Log options sent to the server at connection start.",
+							 NULL,
+							 &cheat_log_session_start_options,
+							 false,
+#if PG_VERSION_NUM >= 90500
+							 PGC_SU_BACKEND,
+#else
+							 PGC_BACKEND,
+#endif
 							 0,
 							 NULL,
 							 NULL,
@@ -165,7 +185,9 @@ _PG_init(void)
 
 	/* Install hooks. */
 	prev_ExecutorEnd = ExecutorEnd_hook;
-	ExecutorEnd_hook = pgcf_ExecutorEnd;
+	ExecutorEnd_hook = CheatExecutorEnd;
+	prev_ClientAuthentication = ClientAuthentication_hook;
+	ClientAuthentication_hook = CheatClientAuthentication;
 }
 
 /*
@@ -176,13 +198,14 @@ _PG_fini(void)
 {
 	/* Uninstall hooks. */
 	ExecutorEnd_hook = prev_ExecutorEnd;
+	ClientAuthentication_hook = prev_ClientAuthentication;
 }
 
 /*
  * ExecutorEnd hook
  */
 static void
-pgcf_ExecutorEnd(QueryDesc *queryDesc)
+CheatExecutorEnd(QueryDesc *queryDesc)
 {
 	if (prev_ExecutorEnd)
 		prev_ExecutorEnd(queryDesc);
@@ -190,8 +213,38 @@ pgcf_ExecutorEnd(QueryDesc *queryDesc)
 		standard_ExecutorEnd(queryDesc);
 
 	/* Print statistics about TopMemoryContext and all its descendants */
-	if (pgcf_log_memory_context)
+	if (cheat_log_memory_context)
 		PrintMemoryContextStats(TopMemoryContext, 0);
+}
+
+/*
+ * ClientAuthentication hook
+ */
+static void
+CheatClientAuthentication(Port *port, int status)
+{
+	if (prev_ClientAuthentication)
+		prev_ClientAuthentication(port, status);
+
+	/* Log options sent to the server at connection start */
+	if (cheat_log_session_start_options)
+	{
+		ListCell   *gucopts = list_head(port->guc_options);
+		while (gucopts)
+		{
+			char	   *name;
+			char	   *value;
+
+			name = lfirst(gucopts);
+			gucopts = lnext(gucopts);
+
+			value = lfirst(gucopts);
+			gucopts = lnext(gucopts);
+
+			ereport(LOG,
+					(errmsg("session-start options: %s = %s", name, value)));
+		}
+	}
 }
 
 #if PG_VERSION_NUM >= 90600

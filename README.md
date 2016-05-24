@@ -328,7 +328,14 @@ or [session_preload_libraries](http://www.postgresql.org/docs/devel/static/runti
 in postgresql.conf
 if you want to use the configuration parameters which this extension provides.
 
-### pg_cheat_functions.log_memory_context (boolean)
+### pg_cheat_funcs.log_memory_context (boolean)
 Cause statistics about all memory contexts to be logged at the end of query execution.
 For details of log format, please see [pg_stat_print_memory_context()](#void-pg_stat_print_memory_context)
 This parameter is off by default. Only superusers can change this setting.
+
+### pg_cheat_funcs.log_session_start_options (boolean)
+Log options sent to the server at connection start.
+This parameter is off by default.
+Only superusers (in PostgreSQL 9.5 or later) or any users (in 9.4 or before)
+can change this parameter at session start,
+and it cannot be changed at all within a session.
