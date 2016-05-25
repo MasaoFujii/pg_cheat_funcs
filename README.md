@@ -239,6 +239,9 @@ even though 4-byte UTF8 sequences can hold values up to U+1FFFFF.
 Therefore this function returns NULL whenever the given code is larger
 than 1114111.
 
+### text pg_utf8(code integer)
+Alias of [pg_chr](https://github.com/MasaoFujii/pg_cheat_funcs#text-pg_chrcode-integer) function.
+
 ### text pg_eucjp(code1 bit(8), code2 bit(8), code3 bit(8))
 Return EUC_JP character with the given codes.
 The following table shows the valid combination of the codes.
