@@ -31,6 +31,7 @@
 #if PG_VERSION_NUM >= 90200
 #include "replication/walsender_private.h"
 #endif
+#include "storage/fd.h"
 #include "storage/lwlock.h"
 #include "storage/proc.h"
 #include "storage/procarray.h"
@@ -148,8 +149,8 @@ PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
 #endif
 static void PrintMemoryContextStats(MemoryContext context, int level);
 static int GetSignalByName(char *signame);
-#if PG_VERSION_NUM >= 90400
 static ReturnSetInfo *InitReturnSetFunc(FunctionCallInfo fcinfo);
+#if PG_VERSION_NUM >= 90400
 static const char *SyncRepGetWaitModeString(int mode);
 #endif
 static bool IsWalSenderPid(int pid);
@@ -308,6 +309,46 @@ CheatClientAuthentication(Port *port, int status)
 					(errmsg("session-start options: %s = %s", name, value)));
 		}
 	}
+}
+
+/*
+ * Initialize function returning a tuplestore (multiple rows).
+ */
+static ReturnSetInfo *
+InitReturnSetFunc(FunctionCallInfo fcinfo)
+{
+	ReturnSetInfo	*rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
+	TupleDesc	tupdesc;
+	Tuplestorestate *tupstore;
+	MemoryContext	per_query_ctx;
+	MemoryContext	oldcontext;
+
+	/* check to see if caller supports us returning a tuplestore */
+	if (rsinfo == NULL || !IsA(rsinfo, ReturnSetInfo))
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("set-valued function called in context that cannot accept a set")));
+	if (!(rsinfo->allowedModes & SFRM_Materialize))
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("materialize mode required, but it is not " \
+						"allowed in this context")));
+
+	/* Build a tuple descriptor for our result type */
+	if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+		elog(ERROR, "return type must be a row type");
+
+	per_query_ctx = rsinfo->econtext->ecxt_per_query_memory;
+	oldcontext = MemoryContextSwitchTo(per_query_ctx);
+
+	tupstore = tuplestore_begin_heap(true, false, work_mem);
+	rsinfo->returnMode = SFRM_Materialize;
+	rsinfo->setResult = tupstore;
+	rsinfo->setDesc = tupdesc;
+
+	MemoryContextSwitchTo(oldcontext);
+
+	return rsinfo;
 }
 
 #if PG_VERSION_NUM >= 90600
@@ -580,46 +621,6 @@ pg_stat_get_syncrep_waiters(PG_FUNCTION_ARGS)
 	tuplestore_donestoring(tupstore);
 
 	return (Datum) 0;
-}
-
-/*
- * Initialize function returning a tuplestore (multiple rows).
- */
-static ReturnSetInfo *
-InitReturnSetFunc(FunctionCallInfo fcinfo)
-{
-	ReturnSetInfo	*rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
-	TupleDesc	tupdesc;
-	Tuplestorestate *tupstore;
-	MemoryContext	per_query_ctx;
-	MemoryContext	oldcontext;
-
-	/* check to see if caller supports us returning a tuplestore */
-	if (rsinfo == NULL || !IsA(rsinfo, ReturnSetInfo))
-		ereport(ERROR,
-				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("set-valued function called in context that cannot accept a set")));
-	if (!(rsinfo->allowedModes & SFRM_Materialize))
-		ereport(ERROR,
-				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("materialize mode required, but it is not " \
-						"allowed in this context")));
-
-	/* Build a tuple descriptor for our result type */
-	if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
-		elog(ERROR, "return type must be a row type");
-
-	per_query_ctx = rsinfo->econtext->ecxt_per_query_memory;
-	oldcontext = MemoryContextSwitchTo(per_query_ctx);
-
-	tupstore = tuplestore_begin_heap(true, false, work_mem);
-	rsinfo->returnMode = SFRM_Materialize;
-	rsinfo->setResult = tupstore;
-	rsinfo->setDesc = tupdesc;
-
-	MemoryContextSwitchTo(oldcontext);
-
-	return rsinfo;
 }
 
 /*
