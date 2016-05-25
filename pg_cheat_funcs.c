@@ -95,6 +95,7 @@ PG_FUNCTION_INFO_V1(pg_wait_syncrep);
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_checkpoint);
+PG_FUNCTION_INFO_V1(pg_promote);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
@@ -118,6 +119,7 @@ Datum pg_process_config_file(PG_FUNCTION_ARGS);
 Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
 Datum pg_checkpoint(PG_FUNCTION_ARGS);
+Datum pg_promote(PG_FUNCTION_ARGS);
 Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
@@ -150,6 +152,7 @@ static const char *SyncRepGetWaitModeString(int mode);
 #endif
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
+static void CreateEmptyFile(const char *filepath);
 static text *Bits8GetText(bits8 b1, bits8 b2, bits8 c3, int len);
 
 /*
@@ -780,6 +783,52 @@ pg_checkpoint(PG_FUNCTION_ARGS)
 					  force ? CHECKPOINT_FORCE : 0);
 
 	PG_RETURN_VOID();
+}
+
+/*
+ * Promote the standby server.
+ */
+Datum
+pg_promote(PG_FUNCTION_ARGS)
+{
+	bool	fast = PG_GETARG_BOOL(0);
+
+#define PROMOTE_SIGNAL_FILE		"promote"
+#define FALLBACK_PROMOTE_SIGNAL_FILE "fallback_promote"
+
+	if (!RecoveryInProgress())
+		ereport(ERROR,
+				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+				 errmsg("server is not in standby mode")));
+
+#if PG_VERSION_NUM >= 90300
+	CreateEmptyFile(fast ? PROMOTE_SIGNAL_FILE :
+					FALLBACK_PROMOTE_SIGNAL_FILE);
+#else
+	CreateEmptyFile(PROMOTE_SIGNAL_FILE);
+#endif
+
+	if (kill(PostmasterPid, SIGUSR1))
+		ereport(ERROR,
+				(errmsg("could not send signal to postmaster: %m")));
+
+	PG_RETURN_VOID();
+}
+
+static void
+CreateEmptyFile(const char *filepath)
+{
+	FILE	   *fd;
+
+	if ((fd = AllocateFile(filepath, "w")) == NULL)
+		ereport(ERROR,
+				(errcode_for_file_access(),
+				 errmsg("could not create file \"%s\": %m", filepath)));
+
+	if (FreeFile(fd))
+		ereport(ERROR,
+				(errcode_for_file_access(),
+				 errmsg("could not write file \"%s\": %m", filepath)));
 }
 
 /*

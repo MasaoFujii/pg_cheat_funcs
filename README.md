@@ -158,6 +158,21 @@ activity has occurred since the last one.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### void pg_promote(fast bool)
+Promote the standby server.
+If fast is true (default), this function requests for fast promotion.
+In fast mode, standby promotion only creates a lightweight
+end-of-recovery record instead of a full checkpoint.
+A checkpoint is requested later, after we're fully out of recovery mode
+and already accepting queries.
+If fast is false, this function requests for fallback version of promotion.
+In this mode, a full checkpoint is created at the end of recovery.
+Note that fallback version of promotion is performed
+in PostgreSQL 9.2 or before whether fast is true or false
+because fast promotion is available only in 9.3 or later.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### text pg_show_primary_conninfo()
 Return the current value of primary_conninfo recovery parameter.
 If it's not set yet, NULL is returned.
