@@ -16,6 +16,7 @@ BEGIN
             OUT free_bytes bigint,
             OUT free_chunks bigint,
             OUT used_bytes bigint)
+        RETURNS SETOF record
         AS 'MODULE_PATHNAME'
         LANGUAGE C STRICT VOLATILE;
         REVOKE ALL ON FUNCTION pg_stat_get_memory_context() FROM PUBLIC;
@@ -68,6 +69,7 @@ BEGIN
         CREATE FUNCTION pg_stat_get_syncrep_waiters(OUT pid integer,
         OUT wait_lsn pg_lsn,
         OUT wait_mode text)
+        RETURNS SETOF record
         AS 'MODULE_PATHNAME'
         LANGUAGE C STRICT VOLATILE;
         REVOKE ALL ON FUNCTION pg_stat_get_syncrep_waiters() FROM PUBLIC;
@@ -120,6 +122,12 @@ RETURNS void
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_promote(bool) FROM PUBLIC;
+
+CREATE FUNCTION pg_recovery_settings(OUT name text, OUT setting text)
+RETURNS SETOF record
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT VOLATILE;
+REVOKE ALL ON FUNCTION pg_recovery_settings() FROM PUBLIC;
 
 CREATE FUNCTION pg_show_primary_conninfo()
 RETURNS text

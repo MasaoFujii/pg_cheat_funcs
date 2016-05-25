@@ -173,6 +173,18 @@ because fast promotion is available only in 9.3 or later.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### SETOF record pg_recovery_settings()
+Return information about all parameter settings in recovery.conf.
+This function returns a record, shown in the table below.
+
+| Column Name | Data Type | Description                  |
+|-------------|-----------|------------------------------|
+| name        | text      | configuration parameter name |
+| setting     | text      | value of the parameter       |
+
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### text pg_show_primary_conninfo()
 Return the current value of primary_conninfo recovery parameter.
 If it's not set yet, NULL is returned.

@@ -96,6 +96,7 @@ PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_checkpoint);
 PG_FUNCTION_INFO_V1(pg_promote);
+PG_FUNCTION_INFO_V1(pg_recovery_settings);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
@@ -120,6 +121,7 @@ Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
 Datum pg_checkpoint(PG_FUNCTION_ARGS);
 Datum pg_promote(PG_FUNCTION_ARGS);
+Datum pg_recovery_settings(PG_FUNCTION_ARGS);
 Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
@@ -815,6 +817,9 @@ pg_promote(PG_FUNCTION_ARGS)
 	PG_RETURN_VOID();
 }
 
+/*
+ * Create empty file.
+ */
 static void
 CreateEmptyFile(const char *filepath)
 {
@@ -829,6 +834,56 @@ CreateEmptyFile(const char *filepath)
 		ereport(ERROR,
 				(errcode_for_file_access(),
 				 errmsg("could not write file \"%s\": %m", filepath)));
+}
+
+/*
+ * Return a table of all parameter settings in recovery.conf.
+ */
+Datum
+pg_recovery_settings(PG_FUNCTION_ARGS)
+{
+#define PG_RECOVERY_SETTINGS_COLS 2
+#define RECOVERY_COMMAND_FILE	"recovery.conf"
+	ReturnSetInfo	*rsinfo;
+	TupleDesc	tupdesc;
+	Tuplestorestate *tupstore;
+	FILE	   *fd;
+	ConfigVariable *item,
+			   *head = NULL,
+			   *tail = NULL;
+
+	rsinfo = InitReturnSetFunc(fcinfo);
+	tupdesc = rsinfo->setDesc;
+	tupstore = rsinfo->setResult;
+
+	fd = AllocateFile(RECOVERY_COMMAND_FILE, "r");
+	if (fd == NULL)
+	{
+		if (errno != ENOENT)
+			ereport(ERROR,
+					(errcode_for_file_access(),
+					 errmsg("could not open recovery command file \"%s\": %m",
+							RECOVERY_COMMAND_FILE)));
+	}
+	else
+	{
+		(void) ParseConfigFp(fd, RECOVERY_COMMAND_FILE, 0, ERROR, &head, &tail);
+		FreeFile(fd);
+	}
+
+	for (item = head; item; item = item->next)
+	{
+		Datum	values[PG_RECOVERY_SETTINGS_COLS];
+		bool	nulls[PG_RECOVERY_SETTINGS_COLS];
+
+		memset(nulls, 0, sizeof(nulls));
+		values[0] = CStringGetTextDatum(item->name);
+		values[1] = CStringGetTextDatum(item->value);
+		tuplestore_putvalues(tupstore, tupdesc, values, nulls);
+	}
+
+	tuplestore_donestoring(tupstore);
+	return (Datum) 0;
 }
 
 /*
