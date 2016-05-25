@@ -176,6 +176,13 @@ RETURNS text
 AS 'MODULE_PATHNAME', 'pg_chr'
 LANGUAGE C STRICT IMMUTABLE;
 
+CREATE FUNCTION pg_all_utf8(OUT code integer, OUT utf8 text)
+RETURNS SETOF record AS
+'SELECT * FROM
+    (SELECT code, pg_utf8(code) utf8 FROM generate_series(0, 1114111) code) tmp
+ WHERE utf8 IS NOT NULL'
+LANGUAGE SQL IMMUTABLE;
+
 CREATE FUNCTION pg_eucjp(bit(8), bit(8) DEFAULT 'x00', bit(8) DEFAULT 'x00')
 RETURNS text
 AS 'MODULE_PATHNAME'
