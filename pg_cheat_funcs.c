@@ -95,6 +95,7 @@ PG_FUNCTION_INFO_V1(pg_wait_syncrep);
 #endif
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
+PG_FUNCTION_INFO_V1(pg_set_next_oid);
 PG_FUNCTION_INFO_V1(pg_oid_assignment);
 PG_FUNCTION_INFO_V1(pg_checkpoint);
 PG_FUNCTION_INFO_V1(pg_promote);
@@ -121,6 +122,7 @@ Datum pg_signal_process(PG_FUNCTION_ARGS);
 Datum pg_process_config_file(PG_FUNCTION_ARGS);
 Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
+Datum pg_set_next_oid(PG_FUNCTION_ARGS);
 Datum pg_oid_assignment(PG_FUNCTION_ARGS);
 Datum pg_checkpoint(PG_FUNCTION_ARGS);
 Datum pg_promote(PG_FUNCTION_ARGS);
@@ -771,6 +773,33 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 	/* Returns the record as Datum */
 	PG_RETURN_DATUM(HeapTupleGetDatum(
 						heap_form_tuple(tupdesc, values, nulls)));
+}
+
+/*
+ * Set and return the next object ID.
+ */
+Datum
+pg_set_next_oid(PG_FUNCTION_ARGS)
+{
+	Oid oid = PG_GETARG_OID(0);
+	Oid result;
+
+	if (RecoveryInProgress())
+		ereport(ERROR,
+				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+				 errmsg("recovery is in progress"),
+		 errhint("pg_set_next_oid() cannot be executed during recovery.")));
+
+#define VAR_OID_PREFETCH		8192
+	LWLockAcquire(OidGenLock, LW_EXCLUSIVE);
+	ShmemVariableCache->nextOid =
+		(oid < ((Oid) FirstNormalObjectId)) ? FirstNormalObjectId : oid;
+	XLogPutNextOid(ShmemVariableCache->nextOid + VAR_OID_PREFETCH);
+	ShmemVariableCache->oidCount = VAR_OID_PREFETCH;
+	result = ShmemVariableCache->nextOid;
+	LWLockRelease(OidGenLock);
+
+	PG_RETURN_OID(result);
 }
 
 /*

@@ -146,6 +146,13 @@ This function returns a record, shown in the table below.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### xid pg_set_next_oid(objectid oid)
+Set and return the next object ID (OID).
+Note that the next OID is set to 16384 (FirstNormalObjectId)
+when the given OID is less than that number.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### SETOF record pg_oid_assignment()
 Return information about object ID (OID) assignment state.
 This function returns a record, shown in the table below.
