@@ -95,6 +95,7 @@ PG_FUNCTION_INFO_V1(pg_wait_syncrep);
 #endif
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
+PG_FUNCTION_INFO_V1(pg_oid_assignment);
 PG_FUNCTION_INFO_V1(pg_checkpoint);
 PG_FUNCTION_INFO_V1(pg_promote);
 PG_FUNCTION_INFO_V1(pg_recovery_settings);
@@ -120,6 +121,7 @@ Datum pg_signal_process(PG_FUNCTION_ARGS);
 Datum pg_process_config_file(PG_FUNCTION_ARGS);
 Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
+Datum pg_oid_assignment(PG_FUNCTION_ARGS);
 Datum pg_checkpoint(PG_FUNCTION_ARGS);
 Datum pg_promote(PG_FUNCTION_ARGS);
 Datum pg_recovery_settings(PG_FUNCTION_ARGS);
@@ -747,7 +749,7 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 	BlessTupleDesc(tupdesc);
 
 	/* Take a lock to ensure value consistency */
-	LWLockAcquire(XidGenLock, LW_EXCLUSIVE);
+	LWLockAcquire(XidGenLock, LW_SHARED);
 	nextXid = ShmemVariableCache->nextXid;
 	oldestXid = ShmemVariableCache->oldestXid;
 	xidVacLimit = ShmemVariableCache->xidVacLimit;
@@ -765,6 +767,47 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 	values[4] = TransactionIdGetDatum(xidStopLimit);
 	values[5] = TransactionIdGetDatum(xidWrapLimit);
 	values[6] = ObjectIdGetDatum(oldestXidDB);
+
+	/* Returns the record as Datum */
+	PG_RETURN_DATUM(HeapTupleGetDatum(
+						heap_form_tuple(tupdesc, values, nulls)));
+}
+
+/*
+ * Return information about OID assignment state.
+ */
+Datum
+pg_oid_assignment(PG_FUNCTION_ARGS)
+{
+#define PG_OID_ASSIGNMENT_COLS	2
+	TupleDesc	tupdesc;
+	Datum	values[PG_OID_ASSIGNMENT_COLS];
+	bool	nulls[PG_OID_ASSIGNMENT_COLS];
+	Oid	nextOid;
+	uint32	oidCount;
+
+	/* Initialise values and NULL flags arrays */
+	MemSet(values, 0, sizeof(values));
+	MemSet(nulls, 0, sizeof(nulls));
+
+	/* Initialise attributes information in the tuple descriptor */
+	tupdesc = CreateTemplateTupleDesc(PG_OID_ASSIGNMENT_COLS, false);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 1, "next_oid",
+					   OIDOID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 2, "oid_count",
+					   INT4OID, -1, 0);
+
+	BlessTupleDesc(tupdesc);
+
+	/* Take a lock to ensure value consistency */
+	LWLockAcquire(OidGenLock, LW_SHARED);
+	nextOid = ShmemVariableCache->nextOid;
+	oidCount = ShmemVariableCache->oidCount;
+	LWLockRelease(OidGenLock);
+
+	/* Fetch values */
+	values[0] = ObjectIdGetDatum(nextOid);
+	values[1] = UInt32GetDatum(oidCount);
 
 	/* Returns the record as Datum */
 	PG_RETURN_DATUM(HeapTupleGetDatum(

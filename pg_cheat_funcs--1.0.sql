@@ -110,6 +110,12 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_xid_assignment() FROM PUBLIC;
 
+CREATE FUNCTION pg_oid_assignment(OUT next_oid oid,
+    OUT oid_count integer)
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT VOLATILE;
+REVOKE ALL ON FUNCTION pg_oid_assignment() FROM PUBLIC;
+
 CREATE FUNCTION pg_checkpoint(bool DEFAULT true, bool DEFAULT true,
     bool DEFAULT true)
 RETURNS void

@@ -146,6 +146,18 @@ This function returns a record, shown in the table below.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### SETOF record pg_oid_assignment()
+Return information about object ID (OID) assignment state.
+This function returns a record, shown in the table below.
+
+| Column Name | Data Type | Description                            |
+|-------------|-----------|----------------------------------------|
+| next_oid    | oid       | next object ID to assign               |
+| oid_count   | integer   | OIDs available before must do WAL work |
+
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### void pg_checkpoint(fast bool, wait bool, force bool)
 Perform a checkpoint.
 If fast is true (default), a checkpoint will finish as soon as possible.
