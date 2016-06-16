@@ -355,6 +355,7 @@ respectively.
 For each character, ordinary map is consulted first.
 If no match is found, extra map is consulted next.
 If still no match, an error is raised.
+Note that extra map is available in PostgreSQL 9.5 or later.
 
 The content of ordinary map is the same as the map that euc_jp_to_utf8
 (default conversion map from EUC_JP to UTF-8 that PostgreSQL provides) uses.
@@ -372,6 +373,10 @@ The extra map contains the following mapping that ordinary map doesn't have.
 | fcf8   | e285b7 (U+2177) | SMALL ROMAN NUMERAL EIGHT |
 | fcf9   | e285b8 (U+2178) | SMALL ROMAN NUMERAL NINE  |
 | fcfa   | e285b9 (U+2179) | SMALL ROMAN NUMERAL TEN   |
+| fcfb   | efbfa2 (U+FFE2) | FULLWIDTH NOT SIGN        |
+| fcfc   | efbfa4 (U+FFE4) | FULLWIDTH BROKEN BAR      |
+| fcfd   | efbc87 (U+FF07) | FULLWIDTH APOSTROPHE      |
+| fcfe   | efbc82 (U+FF02) | FULLWIDTH QUOTATION MARK  |
 
 In order to use pg_euc_jp_to_utf8 as the default conversion from EUC_JP to
 UTF-8, its [pg_conversion](http://www.postgresql.org/docs/devel/static/catalog-pg-conversion.html).condefault
