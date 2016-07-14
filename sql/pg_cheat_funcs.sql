@@ -10,6 +10,21 @@ SELECT pg_eucjp('xa4', 'xa2');
 
 SELECT pg_set_next_xid(next_xid) = next_xid FROM pg_xid_assignment();
 
+DO $$
+DECLARE
+  orig_cleanup_age text := current_setting('vacuum_defer_cleanup_age');
+BEGIN
+  PERFORM pg_advance_vacuum_cleanup_age(99);
+  IF current_setting('vacuum_defer_cleanup_age') <> '-99' THEN
+    RAISE WARNING 'could not advance vacuum cleanup age properly.';
+  END IF;
+  PERFORM pg_advance_vacuum_cleanup_age();
+  IF current_setting('vacuum_defer_cleanup_age') <> orig_cleanup_age THEN
+    RAISE NOTICE 'could not reset vacuum cleanup age properly.';
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
 SELECT to_octal(num) FROM generate_series(1, 10) num;
 SELECT to_octal(2147483647::integer);
 SELECT to_octal(9223372036854775807::bigint);

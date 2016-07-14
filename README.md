@@ -167,6 +167,29 @@ This function returns a record, shown in the table below.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### integer pg_advance_vacuum_cleanup_age(integer)
+Specify the number of transactions by which VACUUM and HOT updates
+will advance cleanup of dead row versions.
+[vacuum_defer_cleanup_age](https://www.postgresql.org/docs/devel/static/runtime-config-replication.html#GUC-VACUUM-DEFER-CLEANUP-AGE)
+in the session calling this function is set to
+the negative value of that specified number. If the argument is omitted
+or NULL is specified, vacuum_defer_cleanup_age is reset to
+its original setting value specified in the configuration file.
+This function returns the vacuum cleanup age.
+
+By advancing the cleanup age, VACUUM and HOT updates can clean up
+even dead tuples that were produced since oldest transaction had started.
+So this function is helpful to prevent the database from bloating due to
+unremovable dead tuples while long transaction is running.
+
+Note that this is extremely dangerous function and can easily corrupt
+the database. Any important data may disappear and data consistency
+may be lost completely.
+This function must not be used for a purpose other than debug.
+
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### void pg_checkpoint(fast bool, wait bool, force bool)
 Perform a checkpoint.
 If fast is true (default), a checkpoint will finish as soon as possible.

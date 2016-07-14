@@ -97,6 +97,7 @@ PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_set_next_oid);
 PG_FUNCTION_INFO_V1(pg_oid_assignment);
+PG_FUNCTION_INFO_V1(pg_advance_vacuum_cleanup_age);
 PG_FUNCTION_INFO_V1(pg_checkpoint);
 PG_FUNCTION_INFO_V1(pg_promote);
 PG_FUNCTION_INFO_V1(pg_recovery_settings);
@@ -124,6 +125,7 @@ Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
 Datum pg_set_next_oid(PG_FUNCTION_ARGS);
 Datum pg_oid_assignment(PG_FUNCTION_ARGS);
+Datum pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS);
 Datum pg_checkpoint(PG_FUNCTION_ARGS);
 Datum pg_promote(PG_FUNCTION_ARGS);
 Datum pg_recovery_settings(PG_FUNCTION_ARGS);
@@ -841,6 +843,35 @@ pg_oid_assignment(PG_FUNCTION_ARGS)
 	/* Returns the record as Datum */
 	PG_RETURN_DATUM(HeapTupleGetDatum(
 						heap_form_tuple(tupdesc, values, nulls)));
+}
+
+/*
+ * Specify the number of transactions by which VACUUM and HOT updates
+ * will advance cleanup of dead row versions.
+ */
+Datum
+pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS)
+{
+	static bool	advanced = false;
+	static int		save_cleanup_age = 0;
+	static int		orig_cleanup_age = 0;
+
+	if (!advanced || vacuum_defer_cleanup_age != save_cleanup_age)
+		orig_cleanup_age = vacuum_defer_cleanup_age;
+
+	if (PG_ARGISNULL(0))
+	{
+		vacuum_defer_cleanup_age = orig_cleanup_age;
+		advanced = false;
+	}
+	else
+	{
+		vacuum_defer_cleanup_age = - PG_GETARG_INT32(0);
+		advanced = true;
+	}
+	save_cleanup_age = vacuum_defer_cleanup_age;
+
+	PG_RETURN_INT32(- vacuum_defer_cleanup_age);
 }
 
 /*
