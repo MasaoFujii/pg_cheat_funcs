@@ -5,6 +5,7 @@ compiler: gcc
 env:
    matrix:
       - PGBRANCH=master
+      - PGBRANCH=REL9_6_STABLE
       - PGBRANCH=REL9_5_STABLE
       - PGBRANCH=REL9_4_STABLE
       - PGBRANCH=REL9_3_STABLE
