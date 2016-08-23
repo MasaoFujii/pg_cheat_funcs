@@ -17953,6 +17953,25 @@ SELECT * FROM all_eucjp ORDER BY eucjp;
  xfe   | xfe   | x00   | ˛˛
 (17863 rows)
 
+SELECT pg_eucjp('xb6', 'xe5') || pg_eucjp('xfc', 'xf9') || pg_eucjp('xad', 'xa9') || pg_eucjp('xfa', 'xdb');
+ ?column? 
+----------
+ ∂Â¸˘≠©˙€
+(1 row)
+
+SET client_encoding TO 'UTF-8';
+SELECT pg_eucjp('xb6', 'xe5') || pg_eucjp('xfc', 'xf9') || pg_eucjp('xad', 'xa9') || pg_eucjp('xfa', 'xdb');
+ERROR:  character with byte sequence 0xfc 0xf9 in encoding "EUC_JP" has no equivalent in encoding "UTF8"
+UPDATE pg_conversion SET condefault = 'f' WHERE conname = 'euc_jp_to_utf8';
+UPDATE pg_conversion SET condefault = 't' WHERE conname = 'pg_euc_jp_to_utf8';
+\c regtest_cheat_funcs_eucjp
+SET client_encoding TO 'UTF-8';
+SELECT pg_eucjp('xb6', 'xe5') || pg_eucjp('xfc', 'xf9') || pg_eucjp('xad', 'xa9') || pg_eucjp('xfa', 'xdb');
+ ?column? 
+----------
+ ‰πù‚Ö∏‚ë®Ê∞ø
+(1 row)
+
 DROP EXTENSION pg_cheat_funcs;
 \c contrib_regression
 DROP DATABASE regtest_cheat_funcs_eucjp;

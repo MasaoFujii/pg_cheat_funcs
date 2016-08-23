@@ -381,7 +381,8 @@ If still no match, an error is raised.
 
 The content of ordinary map is the same as the map that euc_jp_to_utf8
 (default conversion map from EUC_JP to UTF-8 that PostgreSQL provides) uses.
-The extra map contains the following mapping that ordinary map doesn't have.
+The extra map contains some mappings (e.g., the following mappings for
+Roman numerals and full-width symbols) that ordinary map doesn't have.
 
 | EUC_JP | UTF-8           | Description               |
 |--------|-----------------|---------------------------|

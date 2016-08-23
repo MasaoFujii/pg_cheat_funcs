@@ -29,6 +29,17 @@ SELECT count(*) FROM all_eucjp
     WHERE pg_eucjp(code1::bit(8), code2::bit(8), code3::bit(8)) <> eucjp;
 SELECT * FROM all_eucjp ORDER BY eucjp;
 
+SELECT pg_eucjp('xb6', 'xe5') || pg_eucjp('xfc', 'xf9') || pg_eucjp('xad', 'xa9') || pg_eucjp('xfa', 'xdb');
+
+SET client_encoding TO 'UTF-8';
+SELECT pg_eucjp('xb6', 'xe5') || pg_eucjp('xfc', 'xf9') || pg_eucjp('xad', 'xa9') || pg_eucjp('xfa', 'xdb');
+
+UPDATE pg_conversion SET condefault = 'f' WHERE conname = 'euc_jp_to_utf8';
+UPDATE pg_conversion SET condefault = 't' WHERE conname = 'pg_euc_jp_to_utf8';
+\c regtest_cheat_funcs_eucjp
+SET client_encoding TO 'UTF-8';
+SELECT pg_eucjp('xb6', 'xe5') || pg_eucjp('xfc', 'xf9') || pg_eucjp('xad', 'xa9') || pg_eucjp('xfa', 'xdb');
+
 DROP EXTENSION pg_cheat_funcs;
 
 \c contrib_regression
