@@ -4,10 +4,10 @@
 /* pg_stat_get_memory_context function is available only in 9.6 or later */
 DO $$
 DECLARE
-    pgversion TEXT;
+    pgversion INTEGER;
 BEGIN
-    SELECT current_setting('server_version_num') INTO pgversion;
-    IF pgversion >= '90600' THEN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90600 THEN
         CREATE FUNCTION pg_stat_get_memory_context(OUT name text,
             OUT parent text,
             OUT level integer,
@@ -45,10 +45,10 @@ REVOKE ALL ON FUNCTION pg_process_config_file() FROM PUBLIC;
 /* pg_xlogfile_name function is available only in 9.4 or later */
 DO $$
 DECLARE
-    pgversion TEXT;
+    pgversion INTEGER;
 BEGIN
-    SELECT current_setting('server_version_num') INTO pgversion;
-    IF pgversion >= '90400' THEN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90400 THEN
         -- Use VOLATILE because the heading 8 digits of returned WAL file name
         -- (i.e., represents the timeline) can be changed during recovery.
         CREATE FUNCTION pg_xlogfile_name(pg_lsn, boolean)
@@ -62,10 +62,10 @@ $$;
 /* pg_stat_get_syncrep_waiters function is available only in 9.4 or later */
 DO $$
 DECLARE
-    pgversion TEXT;
+    pgversion INTEGER;
 BEGIN
-    SELECT current_setting('server_version_num') INTO pgversion;
-    IF pgversion >= '90400' THEN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90400 THEN
         CREATE FUNCTION pg_stat_get_syncrep_waiters(OUT pid integer,
         OUT wait_lsn pg_lsn,
         OUT wait_mode text)
@@ -80,10 +80,10 @@ $$;
 /* pg_wait_syncrep function is available only in 9.4 or later */
 DO $$
 DECLARE
-    pgversion TEXT;
+    pgversion INTEGER;
 BEGIN
-    SELECT current_setting('server_version_num') INTO pgversion;
-    IF pgversion >= '90400' THEN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90400 THEN
         CREATE FUNCTION pg_wait_syncrep(pg_lsn)
         RETURNS void
         AS 'MODULE_PATHNAME'
@@ -235,10 +235,10 @@ CREATE CONVERSION pg_euc_jp_to_utf8
 /* PGLZ compression functions are available only in 9.5 or later */
 DO $$
 DECLARE
-    pgversion TEXT;
+    pgversion INTEGER;
 BEGIN
-    SELECT current_setting('server_version_num') INTO pgversion;
-    IF pgversion >= '90500' THEN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90500 THEN
         CREATE FUNCTION pglz_compress(text)
         RETURNS bytea
         AS 'MODULE_PATHNAME', 'pglz_compress_text'
@@ -249,10 +249,10 @@ $$;
 
 DO $$
 DECLARE
-    pgversion TEXT;
+    pgversion INTEGER;
 BEGIN
-    SELECT current_setting('server_version_num') INTO pgversion;
-    IF pgversion >= '90500' THEN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90500 THEN
         CREATE FUNCTION pglz_compress_bytea(bytea)
         RETURNS bytea
         AS 'MODULE_PATHNAME', 'pglz_compress_bytea'
@@ -263,10 +263,10 @@ $$;
 
 DO $$
 DECLARE
-    pgversion TEXT;
+    pgversion INTEGER;
 BEGIN
-    SELECT current_setting('server_version_num') INTO pgversion;
-    IF pgversion >= '90500' THEN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90500 THEN
         CREATE FUNCTION pglz_decompress(bytea)
         RETURNS text
         AS 'MODULE_PATHNAME', 'pglz_decompress_text'
@@ -277,10 +277,10 @@ $$;
 
 DO $$
 DECLARE
-    pgversion TEXT;
+    pgversion INTEGER;
 BEGIN
-    SELECT current_setting('server_version_num') INTO pgversion;
-    IF pgversion >= '90500' THEN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90500 THEN
         CREATE FUNCTION pglz_decompress_bytea(bytea)
         RETURNS bytea
         AS 'MODULE_PATHNAME', 'pglz_decompress_bytea'

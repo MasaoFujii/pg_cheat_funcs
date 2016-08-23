@@ -6,7 +6,7 @@ DATA = pg_cheat_funcs--1.0.sql
 
 REGRESS = pg_cheat_funcs pg_eucjp
 
-MAJORVERSION_INT = $(shell echo $(MAJORVERSION) | tr -d .)
+MAJORVERSION_INT = $(shell echo $(MAJORVERSION).0 | cut -d . -f 1-2 | tr -d .)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 96 ]; then echo pg_stat_get_memory_context; fi)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 95 ]; then echo pglz_compress; fi)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 94 ]; then echo pg_chr; else echo pg_chr_91_93; fi)
