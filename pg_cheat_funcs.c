@@ -897,7 +897,9 @@ pg_checkpoint(PG_FUNCTION_ARGS)
 Datum
 pg_promote(PG_FUNCTION_ARGS)
 {
+#if PG_VERSION_NUM >= 90300
 	bool	fast = PG_GETARG_BOOL(0);
+#endif
 
 #define PROMOTE_SIGNAL_FILE		"promote"
 #define FALLBACK_PROMOTE_SIGNAL_FILE "fallback_promote"
