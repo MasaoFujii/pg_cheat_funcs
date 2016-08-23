@@ -1310,6 +1310,11 @@ pg_euc_jp_to_utf8(PG_FUNCTION_ARGS)
 	unsigned char *dest = (unsigned char *) PG_GETARG_CSTRING(3);
 	int			len = PG_GETARG_INT32(4);
 
+#if PG_VERSION_NUM < 90500
+	static pg_local_to_utf_combined cmap[lengthof(ExtraLUmapEUC_JP)];
+	static bool first_time = true;
+#endif
+
 	CHECK_ENCODING_CONVERSION_ARGS(PG_EUC_JP, PG_UTF8);
 
 #if PG_VERSION_NUM >= 90500
@@ -1319,9 +1324,33 @@ pg_euc_jp_to_utf8(PG_FUNCTION_ARGS)
 			   extra_euc_jp_to_utf8,
 			   PG_EUC_JP);
 #else
+	/*
+	 * The first time through, we create the extra conversion map in
+	 * pg_local_to_utf_combined struct so that LocalToUtf() can use it
+	 * as "secondary" conversion map which is consulted after
+	 * no match is found in ordinary map.
+	 */
+	if (first_time)
+	{
+		int	i;
+		const pg_local_to_utf *p = ExtraLUmapEUC_JP;
+		pg_local_to_utf_combined *cp = cmap;
+
+		for (i = 0; i < lengthof(ExtraLUmapEUC_JP); i++)
+		{
+			cp->code = p->code;
+			cp->utf1 = p->utf;
+			cp->utf2 = 0;
+			p++;
+			cp++;
+		}
+		first_time = false;
+	}
+
 	LocalToUtf(src, dest,
-			   LUmapEUC_JP, NULL,
-			   lengthof(LUmapEUC_JP), 0,
+			   LUmapEUC_JP, cmap,
+			   lengthof(LUmapEUC_JP),
+			   lengthof(ExtraLUmapEUC_JP),
 			   PG_EUC_JP, len);
 #endif
 

@@ -378,7 +378,6 @@ respectively.
 For each character, ordinary map is consulted first.
 If no match is found, extra map is consulted next.
 If still no match, an error is raised.
-Note that extra map is available in PostgreSQL 9.5 or later.
 
 The content of ordinary map is the same as the map that euc_jp_to_utf8
 (default conversion map from EUC_JP to UTF-8 that PostgreSQL provides) uses.
