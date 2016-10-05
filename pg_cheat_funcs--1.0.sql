@@ -42,7 +42,7 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_process_config_file() FROM PUBLIC;
 
-/* pg_xlogfile_name function is available only in 9.4 or later */
+/* Any functions using pg_lsn data type are available only in 9.4 or later */
 DO $$
 DECLARE
     pgversion INTEGER;
@@ -55,6 +55,31 @@ BEGIN
         RETURNS text
         AS 'MODULE_PATHNAME'
         LANGUAGE C STRICT VOLATILE;
+
+        -- Aggregate functions for pg_lsn data type.
+        CREATE FUNCTION pg_lsn_larger(pg_lsn, pg_lsn)
+        RETURNS pg_lsn
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT IMMUTABLE;
+
+        CREATE FUNCTION pg_lsn_smaller(pg_lsn, pg_lsn)
+        RETURNS pg_lsn
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT IMMUTABLE;
+
+        CREATE AGGREGATE max(pg_lsn)  (
+            SFUNC = pg_lsn_larger,
+            STYPE = pg_lsn,
+            SORTOP = >,
+            COMBINEFUNC = pg_lsn_larger
+        );
+
+        CREATE AGGREGATE min(pg_lsn)  (
+            SFUNC = pg_lsn_smaller,
+            STYPE = pg_lsn,
+            SORTOP = <,
+            COMBINEFUNC = pg_lsn_smaller
+        );
     END IF;
 END;
 $$;

@@ -90,6 +90,8 @@ PG_FUNCTION_INFO_V1(pg_signal_process);
 PG_FUNCTION_INFO_V1(pg_process_config_file);
 #if PG_VERSION_NUM >= 90400
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
+PG_FUNCTION_INFO_V1(pg_lsn_larger);
+PG_FUNCTION_INFO_V1(pg_lsn_smaller);
 PG_FUNCTION_INFO_V1(pg_stat_get_syncrep_waiters);
 PG_FUNCTION_INFO_V1(pg_wait_syncrep);
 #endif
@@ -579,6 +581,36 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
 	XLogFileName(xlogfilename, ThisTimeLineID, xlogsegno);
 
 	PG_RETURN_TEXT_P(cstring_to_text(xlogfilename));
+}
+
+/*
+ * Return larger pg_lsn value.
+ */
+Datum
+pg_lsn_larger(PG_FUNCTION_ARGS)
+{
+	XLogRecPtr	lsn1 = PG_GETARG_LSN(0);
+	XLogRecPtr	lsn2 = PG_GETARG_LSN(1);
+	XLogRecPtr	result;
+
+	result = ((lsn1 > lsn2) ? lsn1 : lsn2);
+
+	PG_RETURN_LSN(result);
+}
+
+/*
+ * Return smaller pg_lsn value.
+ */
+Datum
+pg_lsn_smaller(PG_FUNCTION_ARGS)
+{
+	XLogRecPtr	lsn1 = PG_GETARG_LSN(0);
+	XLogRecPtr	lsn2 = PG_GETARG_LSN(1);
+	XLogRecPtr	result;
+
+	result = ((lsn1 < lsn2) ? lsn1 : lsn2);
+
+	PG_RETURN_LSN(result);
 }
 
 /*

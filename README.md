@@ -93,6 +93,16 @@ That is, this function can return bogus WAL file name.
 For details of this conversion, please see [PostgreSQL document](http://www.postgresql.org/docs/devel/static/functions-admin.html#FUNCTIONS-ADMIN-BACKUP).
 This function is available only in PostgreSQL 9.4 or later.
 
+### pg_lsn max(SETOF pg_lsn)
+This is max() aggregate function for pg_lsn data type.
+This aggregate function computes and returns a maximum pg_lsn value
+from a set of pg_lsn input values.
+
+### pg_lsn min(SETOF pg_lsn)
+This is min() aggregate function for pg_lsn data type.
+This aggregate function computes and returns a minimum pg_lsn value
+from a set of pg_lsn input values.
+
 ### SETOF record pg_stat_get_syncrep_waiters()
 Return statistics about all server processes waiting for
 synchronous replication.
