@@ -70,15 +70,13 @@ BEGIN
         CREATE AGGREGATE max(pg_lsn)  (
             SFUNC = pg_lsn_larger,
             STYPE = pg_lsn,
-            SORTOP = >,
-            COMBINEFUNC = pg_lsn_larger
+            SORTOP = >
         );
 
         CREATE AGGREGATE min(pg_lsn)  (
             SFUNC = pg_lsn_smaller,
             STYPE = pg_lsn,
-            SORTOP = <,
-            COMBINEFUNC = pg_lsn_smaller
+            SORTOP = <
         );
     END IF;
 END;
