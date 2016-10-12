@@ -249,6 +249,10 @@ For details of primary_conninfo parameter, please see [PostgreSQL document](http
 ### integer pg_postmaster_pid()
 Return the Process ID of the postmaster process.
 
+### timestamp with time zone pg_backend_start_time()
+Return the time when the server process attached to the current session
+was started.
+
 ### bigint pg_file_write_binary(filepath text, data bytea)
 Write bytea data to the file.
 This function creates the file if it does not exist,

@@ -40,6 +40,7 @@
 #if PG_VERSION_NUM >= 90400
 #include "utils/pg_lsn.h"
 #endif
+#include "utils/timestamp.h"
 #include "utils/varbit.h"
 
 PG_MODULE_MAGIC;
@@ -105,6 +106,7 @@ PG_FUNCTION_INFO_V1(pg_promote);
 PG_FUNCTION_INFO_V1(pg_recovery_settings);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
+PG_FUNCTION_INFO_V1(pg_backend_start_time);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
 PG_FUNCTION_INFO_V1(to_octal32);
 PG_FUNCTION_INFO_V1(to_octal64);
@@ -133,6 +135,7 @@ Datum pg_promote(PG_FUNCTION_ARGS);
 Datum pg_recovery_settings(PG_FUNCTION_ARGS);
 Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
+Datum pg_backend_start_time(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
 Datum to_octal32(PG_FUNCTION_ARGS);
 Datum to_octal64(PG_FUNCTION_ARGS);
@@ -1050,6 +1053,18 @@ Datum
 pg_postmaster_pid(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_INT32(PostmasterPid);
+}
+
+/*
+ * Return the time when this backend process was started.
+ */
+Datum
+pg_backend_start_time(PG_FUNCTION_ARGS)
+{
+	if (MyProcPort)
+		PG_RETURN_TIMESTAMPTZ(MyProcPort->SessionStartTime);
+	else
+		PG_RETURN_NULL();
 }
 
 /*
