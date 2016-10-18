@@ -274,7 +274,6 @@ CheatClientAuthentication(Port *port, int status)
 	{
 		List			*gucopts = port->guc_options;
 		ListCell	*cell;
-		ListCell	*prev = NULL;
 		ListCell	*next;
 
 		for (cell = list_head(gucopts); cell != NULL; cell = next)
@@ -286,18 +285,16 @@ CheatClientAuthentication(Port *port, int status)
 
 			if (strcmp(name, "application_name") != 0)
 			{
-				prev = next;
 				next = lnext(next);
 				continue;
 			}
 
-			gucopts = list_delete_cell(gucopts, cell, prev);
 			cell = next;
 			next = lnext(next);
 			value = lfirst(cell);
 			SetConfigOption("pg_cheat_funcs.hidden_appname", value,
 							PGC_USERSET, PGC_S_CLIENT);
-			gucopts = list_delete_cell(gucopts, cell, prev);
+			strcpy(value, "");	/* reset application_name to an empty */
 		}
 	}
 
