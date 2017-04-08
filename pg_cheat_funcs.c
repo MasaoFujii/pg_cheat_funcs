@@ -19,7 +19,11 @@
 #include "common/pg_lzcompress.h"
 #endif
 #include "conv/euc_jp_to_utf8.extra"
+#if PG_VERSION_NUM >= 100000
+#include "conv/euc_jp_to_utf8.radix"
+#else
 #include "conv/euc_jp_to_utf8.map"
+#endif
 #include "funcapi.h"
 #include "libpq/auth.h"
 #include "libpq/libpq-be.h"
@@ -1363,7 +1367,13 @@ pg_euc_jp_to_utf8(PG_FUNCTION_ARGS)
 
 	CHECK_ENCODING_CONVERSION_ARGS(PG_EUC_JP, PG_UTF8);
 
-#if PG_VERSION_NUM >= 90500
+#if PG_VERSION_NUM >= 100000
+	LocalToUtf(src, len, dest,
+			   &euc_jp_to_unicode_tree,
+			   NULL, 0,
+			   extra_euc_jp_to_utf8,
+			   PG_EUC_JP);
+#elif PG_VERSION_NUM >= 90500
 	LocalToUtf(src, len, dest,
 			   LUmapEUC_JP, lengthof(LUmapEUC_JP),
 			   NULL, 0,

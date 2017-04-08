@@ -1,5 +1,24 @@
 #include "mb/pg_wchar.h"
 
+#if PG_VERSION_NUM >= 100000
+/*
+ * In 10, commit aeed17d changed character encoding conversions
+ * so that they use radix tree-based map. As a side effect of this,
+ * the structure for local code to UTF-8 conversion map,
+ * pg_local_to_utf, was removed from PostgreSQL source tree
+ * though it's still necessary for this extra conversion map.
+ * Therefore we reintroduce pg_local_to_utf structure here.
+ *
+ * XXX should this extra conversion map be converted into
+ * radix tree-based one?
+ */
+typedef struct
+{
+	uint32		code;			/* local code */
+	uint32		utf;			/* UTF-8 */
+} pg_local_to_utf;
+#endif
+
 static const pg_local_to_utf ExtraLUmapEUC_JP[] = {
   {0xf9a1, 0xe7ba8a},
   {0xf9a2, 0xe8a49c},

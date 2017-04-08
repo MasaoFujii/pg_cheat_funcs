@@ -1,3 +1,4 @@
+/* This file is copied from src/backend/utils/mb/Unicode/euc_jp_to_utf8.map */
 #include "mb/pg_wchar.h"
 
 static const pg_local_to_utf LUmapEUC_JP[] = {
