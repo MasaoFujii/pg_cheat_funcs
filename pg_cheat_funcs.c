@@ -18,6 +18,9 @@
 #if PG_VERSION_NUM >= 90500
 #include "common/pg_lzcompress.h"
 #endif
+#if PG_VERSION_NUM >= 100000
+#include "common/saslprep.h"
+#endif
 #include "conv/euc_jp_to_utf8.extra"
 #if PG_VERSION_NUM >= 100000
 #include "conv/euc_jp_to_utf8.radix"
@@ -119,6 +122,9 @@ PG_FUNCTION_INFO_V1(pg_hex_to_text);
 PG_FUNCTION_INFO_V1(pg_chr);
 PG_FUNCTION_INFO_V1(pg_eucjp);
 PG_FUNCTION_INFO_V1(pg_euc_jp_to_utf8);
+#if PG_VERSION_NUM >= 100000
+PG_FUNCTION_INFO_V1(pg_cheat_saslprep);
+#endif
 
 /*
  * The function prototypes are created as a part of PG_FUNCTION_INFO_V1
@@ -1518,3 +1524,28 @@ PGLZDecompress(struct varlena *source)
 	return dest;
 }
 #endif	/* PG_VERSION_NUM >= 90500 */
+
+#if PG_VERSION_NUM >= 100000
+/*
+ * Normalize the input string with SASLprep.
+ */
+Datum
+pg_cheat_saslprep(PG_FUNCTION_ARGS)
+{
+	char	*input = text_to_cstring(PG_GETARG_TEXT_P(0));
+	char	*output = NULL;
+	pg_saslprep_rc rc;
+
+	rc = pg_saslprep(input, &output);
+	if (rc == SASLPREP_INVALID_UTF8)
+		ereport(ERROR,
+				(errcode(ERRCODE_CHARACTER_NOT_IN_REPERTOIRE),
+				 (errmsg("input is not a valid UTF-8 string"))));
+	else if (rc == SASLPREP_PROHIBITED)
+		ereport(ERROR,
+				(errcode(ERRCODE_CHARACTER_NOT_IN_REPERTOIRE),
+				 (errmsg("normalized string contains prohibited characters"))));
+
+	PG_RETURN_TEXT_P(cstring_to_text(output));
+}
+#endif

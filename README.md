@@ -382,6 +382,14 @@ pg_lz_compress() or pg_lz_compress_bytea() returned.
 Otherwise this function may return a corrupted data.
 This function is available only in PostgreSQL 9.5 or later.
 
+### text pg_saslprep(input text)
+Normalize an input string with SASLprep.
+SASLprep normalization is basically used to process a user-supplied
+password into canonical form for SCRAM authentication.
+Note that an error is raised if the input is not a valid UTF-8 string or
+the normalized string contains characters prohibited by the SASLprep profile.
+This function is available only in PostgreSQL 10 or later.
+
 ## Encoding Conversions
 
 ### pg_euc_jp_to_utf8

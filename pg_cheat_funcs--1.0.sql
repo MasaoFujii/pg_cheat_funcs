@@ -316,3 +316,17 @@ BEGIN
     END IF;
 END;
 $$;
+
+DO $$
+DECLARE
+    pgversion INTEGER;
+BEGIN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 100000 THEN
+        CREATE FUNCTION pg_saslprep(text)
+        RETURNS text
+        AS 'MODULE_PATHNAME', 'pg_cheat_saslprep'
+        LANGUAGE C STRICT IMMUTABLE;
+    END IF;
+END;
+$$;
