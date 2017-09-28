@@ -587,8 +587,13 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
 				 errmsg("recovery is in progress"),
 		 errhint("pg_xlogfile_name() cannot be executed during recovery.")));
 
+#if PG_VERSION_NUM >= 110000
+	XLByteToPrevSeg(locationpoint, xlogsegno, wal_segment_size);
+	XLogFileName(xlogfilename, ThisTimeLineID, xlogsegno, wal_segment_size);
+#else
 	XLByteToPrevSeg(locationpoint, xlogsegno);
 	XLogFileName(xlogfilename, ThisTimeLineID, xlogsegno);
+#endif
 
 	PG_RETURN_TEXT_P(cstring_to_text(xlogfilename));
 }
