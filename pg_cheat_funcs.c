@@ -96,6 +96,7 @@ PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
 PG_FUNCTION_INFO_V1(pg_stat_print_memory_context);
 PG_FUNCTION_INFO_V1(pg_signal_process);
 PG_FUNCTION_INFO_V1(pg_get_priority);
+PG_FUNCTION_INFO_V1(pg_set_priority);
 PG_FUNCTION_INFO_V1(pg_process_config_file);
 #if PG_VERSION_NUM >= 90400
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
@@ -136,6 +137,7 @@ PG_FUNCTION_INFO_V1(pg_cheat_saslprep);
 Datum pg_stat_print_memory_context(PG_FUNCTION_ARGS);
 Datum pg_signal_process(PG_FUNCTION_ARGS);
 Datum pg_get_priority(PG_FUNCTION_ARGS);
+Datum pg_set_priority(PG_FUNCTION_ARGS);
 Datum pg_process_config_file(PG_FUNCTION_ARGS);
 Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
@@ -512,6 +514,28 @@ pg_get_priority(PG_FUNCTION_ARGS)
 				(errmsg("could not get scheduling priority of process %d: %m", pid)));
 
 	PG_RETURN_INT32(priority);
+}
+
+/*
+ * Set the scheduling priority of PostgreSQL server process.
+ */
+Datum
+pg_set_priority(PG_FUNCTION_ARGS)
+{
+	int		pid = PG_GETARG_INT32(0);
+	int		priority = PG_GETARG_INT32(1);
+
+	if (PostmasterPid != pid && !IsBackendPid(pid) &&
+		!IsWalSenderPid(pid) && !IsWalReceiverPid(pid))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 (errmsg("PID %d is not a PostgreSQL server process", pid))));
+
+	if (setpriority(PRIO_PROCESS, pid, priority) != 0)
+		ereport(ERROR,
+				(errmsg("could not set the scheduling priority of process %d to %d: %m", pid, priority)));
+
+	PG_RETURN_VOID();
 }
 
 /*

@@ -81,6 +81,13 @@ walreceiver process.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### void pg_set_priority(pid int, priority int)
+Set the scheduling priority of the specified PostgreSQL server process to the specified value.
+This function can change the priority of only postmaster, backend, walsender and
+walreceiver process.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### void pg_process_config_file()
 Read and process the configuration file.
 Note that, if an error occurs, it's logged with DEBUG2 level.
