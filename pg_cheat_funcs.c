@@ -7,6 +7,8 @@
  */
 #include "postgres.h"
 
+#include <sys/resource.h>
+
 #include "access/clog.h"
 #if PG_VERSION_NUM >= 90300
 #include "access/htup_details.h"
