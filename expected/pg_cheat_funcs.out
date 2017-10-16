@@ -12,6 +12,18 @@ SELECT pg_signal_process(pg_postmaster_pid(), 'HUP');
  
 (1 row)
 
+SELECT pg_set_priority(pg_backend_pid(), 1);
+ pg_set_priority 
+-----------------
+ 
+(1 row)
+
+SELECT pg_get_priority(pg_backend_pid());
+ pg_get_priority 
+-----------------
+               1
+(1 row)
+
 SELECT pg_eucjp('xa4', 'xa2');
 ERROR:  database encoding is UTF8
 HINT:  pg_eucjp() can be executed only under EUC_JP encoding.
