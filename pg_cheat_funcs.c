@@ -511,7 +511,7 @@ pg_get_priority(PG_FUNCTION_ARGS)
 	priority = getpriority(PRIO_PROCESS, pid);
 	if (errno != 0)
 		ereport(ERROR,
-				(errmsg("could not get scheduling priority of process %d: %m", pid)));
+				(errmsg("could not get the scheduling priority of process %d: %m", pid)));
 
 	PG_RETURN_INT32(priority);
 }
