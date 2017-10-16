@@ -74,7 +74,7 @@ For example, terminate walreceiver process:
     -- Note that pg_stat_wal_receiver view is available in 9.6 or later
     =# SELECT pg_signal_process(pid, 'TERM') FROM pg_stat_wal_receiver;
 
-### void pg_get_priority(pid int)
+### integer pg_get_priority(pid int)
 Return the scheduling priority of the specified PostgreSQL server process.
 This function can get the priority of only postmaster, backend, walsender and
 walreceiver process.
