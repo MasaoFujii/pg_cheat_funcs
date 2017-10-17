@@ -75,16 +75,18 @@ For example, terminate walreceiver process:
     =# SELECT pg_signal_process(pid, 'TERM') FROM pg_stat_wal_receiver;
 
 ### integer pg_get_priority(pid int)
-Return the scheduling priority of the specified PostgreSQL server process.
+Return the scheduling priority ("nice") of the specified PostgreSQL server process.
 This function can get the priority of only postmaster, backend, walsender and
 walreceiver process.
+See getpriority(2) man page for details about a scheduling priority.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
 ### void pg_set_priority(pid int, priority int)
-Set the scheduling priority of the specified PostgreSQL server process to the specified value.
+Set the scheduling priority ("nice") of the specified PostgreSQL server process to the specified value.
 This function can change the priority of only postmaster, backend, walsender and
 walreceiver process.
+See getpriority(2) man page for details about a scheduling priority.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
@@ -484,3 +486,11 @@ This parameter is off by default.
 Only superusers (in PostgreSQL 9.5 or later) or any users (in 9.4 or before)
 can change this parameter at session start,
 and it cannot be changed at all within a session.
+
+### pg_cheat_funcs.scheduling_priority (integer)
+Specify the scheduling priority ("nice") of PostgreSQL server process.
+Valid values are between -20 and 19.
+Lower values cause more favorable scheduling.
+The default value is zero.
+Any users can change this setting.
+See getpriority(2) man page for details about a scheduling priority.

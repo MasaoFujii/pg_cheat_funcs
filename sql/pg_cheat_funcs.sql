@@ -6,8 +6,10 @@ SELECT pg_stat_print_memory_context();
 
 SELECT pg_signal_process(pg_postmaster_pid(), 'HUP');
 
-SELECT pg_set_priority(pg_backend_pid(), 1);
+SET pg_cheat_funcs.scheduling_priority TO 1;
 SELECT pg_get_priority(pg_backend_pid());
+SELECT pg_set_priority(pg_backend_pid(), 2);
+SHOW pg_cheat_funcs.scheduling_priority;
 
 SELECT pg_eucjp('xa4', 'xa2');
 

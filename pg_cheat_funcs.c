@@ -8,6 +8,7 @@
 #include "postgres.h"
 
 #include <sys/resource.h>
+#include <unistd.h>
 
 #include "access/clog.h"
 #if PG_VERSION_NUM >= 90300
@@ -59,6 +60,7 @@ static bool	cheat_log_memory_context = false;
 static bool	cheat_hide_appname = false;
 static char	*cheat_hidden_appname = NULL;
 static bool	cheat_log_session_start_options = false;
+static int		cheat_scheduling_priority = 0;
 
 /* Saved hook values in case of unload */
 static ExecutorEnd_hook_type prev_ExecutorEnd = NULL;
@@ -180,10 +182,16 @@ static ReturnSetInfo *InitReturnSetFunc(FunctionCallInfo fcinfo);
 #if PG_VERSION_NUM >= 90400
 static const char *SyncRepGetWaitModeString(int mode);
 #endif
+static int GetProcessPriority(int pid, int elevel);
+static void SetProcessPriority(int pid, int priority, int elevel);
+static void CheckPostgresPid(int pid);
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
 static void CreateEmptyFile(const char *filepath);
 static text *Bits8GetText(bits8 b1, bits8 b2, bits8 c3, int len);
+
+static void assign_scheduling_priority(int newval, void *extra);
+static const char *show_scheduling_priority(void);
 
 /*
  * Module load callback
@@ -239,6 +247,19 @@ _PG_init(void)
 							 NULL,
 							 NULL,
 							 NULL);
+
+	DefineCustomIntVariable("pg_cheat_funcs.scheduling_priority",
+							"Set the scheduling priority of PostgreSQL server process.",
+							NULL,
+							&cheat_scheduling_priority,
+							0,
+							-20,
+							19,
+							PGC_USERSET,
+							0,
+							NULL,
+							assign_scheduling_priority,
+							show_scheduling_priority);
 
 	EmitWarningsOnPlaceholders("pg_cheat_funcs");
 
@@ -481,17 +502,26 @@ pg_signal_process(PG_FUNCTION_ARGS)
 	char	*signame = text_to_cstring(PG_GETARG_TEXT_P(1));
 	int		sig = GetSignalByName(signame);
 
-	if (PostmasterPid != pid && !IsBackendPid(pid) &&
-		!IsWalSenderPid(pid) && !IsWalReceiverPid(pid))
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 (errmsg("PID %d is not a PostgreSQL server process", pid))));
-
+	CheckPostgresPid(pid);
 	if (kill(pid, sig))
 		ereport(ERROR,
 				(errmsg("could not send signal to process %d: %m", pid)));
 
 	PG_RETURN_VOID();
+}
+
+/*
+ * Check to see if a given pid is a running postmaster, backend, walsender
+ * or walreceiver.
+ */
+static void
+CheckPostgresPid(int pid)
+{
+	if (PostmasterPid != pid && !IsBackendPid(pid) &&
+		!IsWalSenderPid(pid) && !IsWalReceiverPid(pid))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 (errmsg("PID %d is not a PostgreSQL server process", pid))));
 }
 
 /*
@@ -503,19 +533,28 @@ pg_get_priority(PG_FUNCTION_ARGS)
 	int		pid = PG_GETARG_INT32(0);
 	int		priority;
 
-	if (PostmasterPid != pid && !IsBackendPid(pid) &&
-		!IsWalSenderPid(pid) && !IsWalReceiverPid(pid))
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 (errmsg("PID %d is not a PostgreSQL server process", pid))));
+	CheckPostgresPid(pid);
+	priority = GetProcessPriority(pid, ERROR);
+	PG_RETURN_INT32(priority);
+}
+
+/*
+ * Get the scheduling priority of the specified process.
+ */
+static int
+GetProcessPriority(int pid, int elevel)
+{
+	int	priority = 0;
+	int	save_errno = errno;
 
 	errno = 0;
 	priority = getpriority(PRIO_PROCESS, pid);
 	if (errno != 0)
-		ereport(ERROR,
+		ereport(elevel,
 				(errmsg("could not get the scheduling priority of process %d: %m", pid)));
+	errno = save_errno;
 
-	PG_RETURN_INT32(priority);
+	return priority;
 }
 
 /*
@@ -527,17 +566,40 @@ pg_set_priority(PG_FUNCTION_ARGS)
 	int		pid = PG_GETARG_INT32(0);
 	int		priority = PG_GETARG_INT32(1);
 
-	if (PostmasterPid != pid && !IsBackendPid(pid) &&
-		!IsWalSenderPid(pid) && !IsWalReceiverPid(pid))
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 (errmsg("PID %d is not a PostgreSQL server process", pid))));
+	CheckPostgresPid(pid);
+	SetProcessPriority(pid, priority, ERROR);
+	PG_RETURN_VOID();
+}
+
+/*
+ * Set the scheduling priority of the specified process.
+ */
+static void
+SetProcessPriority(int pid, int priority, int elevel)
+{
+	int	save_errno = errno;
 
 	if (setpriority(PRIO_PROCESS, pid, priority) != 0)
-		ereport(ERROR,
+		ereport(elevel,
 				(errmsg("could not set the scheduling priority of process %d to %d: %m", pid, priority)));
+	errno = save_errno;
+}
 
-	PG_RETURN_VOID();
+static void
+assign_scheduling_priority(int newval, void *extra)
+{
+	/* See comments in assign_tcp_keepalives_idle in PostgreSQL source */
+	SetProcessPriority(getpid(), newval, WARNING);
+}
+
+static const char *
+show_scheduling_priority(void)
+{
+	/* See comments in assign_tcp_keepalives_idle in PostgreSQL source */
+	static char nbuf[16];
+
+	snprintf(nbuf, sizeof(nbuf), "%d", GetProcessPriority(getpid(), WARNING));
+	return nbuf;
 }
 
 /*
