@@ -1,0 +1,10 @@
+CREATE EXTENSION pg_cheat_funcs;
+\pset null '(null)'
+PREPARE stmt AS SELECT * FROM pg_database WHERE datname = $1;
+SELECT * FROM pg_cached_plan_source('stmt');
+ generic_cost | total_custom_cost | num_custom_plans | force_generic | force_custom 
+--------------+-------------------+------------------+---------------+--------------
+           -1 |                 0 |                0 | f             | f
+(1 row)
+
+DROP EXTENSION pg_cheat_funcs;
