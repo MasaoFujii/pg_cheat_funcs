@@ -30,6 +30,26 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_stat_print_memory_context() FROM PUBLIC;
 
+/* pg_cached_plan_source function is available only in 9.2 or later */
+DO $$
+DECLARE
+    pgversion INTEGER;
+BEGIN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90200 THEN
+			 CREATE FUNCTION pg_cached_plan_source(IN stmt text,
+			 OUT generic_cost double precision,
+			 OUT total_custom_cost double precision,
+			 OUT num_custom_plans integer,
+			 OUT force_generic boolean,
+			 OUT force_custom boolean)
+			 RETURNS record
+			 AS 'MODULE_PATHNAME'
+			 LANGUAGE C STRICT VOLATILE;
+    END IF;
+END;
+$$;
+
 CREATE FUNCTION pg_signal_process(integer, text)
 RETURNS void
 AS 'MODULE_PATHNAME'

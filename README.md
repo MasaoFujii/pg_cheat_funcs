@@ -62,6 +62,20 @@ For descriptions of the above fields, please see [pg_stat_get_memory_context()](
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### record pg_cached_plan_source(stmt text)
+Return information about cached plan source of the specified prepared statement.
+This function returns a record, shown in the table below.
+
+| Column Name       | Data Type        | Description                              |
+|-------------------|------------------|------------------------------------------|
+| generic_cost      | double precision | cost of generic plan, or -1 if not known |
+| total_custom_cost | double precision | total cost of custom plans so far        |
+| num_custom_plans  | integer          | number of plans included in total        |
+| force_generic     | boolean          | force use of generic plan?               |
+| force_custom      | boolean          | force use of custom plan?                |
+
+This function is available only in PostgreSQL 9.2 or later.
+
 ### void pg_signal_process(pid int, signame text)
 Send a signal to PostgreSQL server process.
 This function can signal to only postmaster, backend, walsender and walreceiver process.

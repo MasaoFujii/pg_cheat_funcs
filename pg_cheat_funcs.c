@@ -18,6 +18,7 @@
 #include "access/xlog_internal.h"
 #include "access/transam.h"
 #include "catalog/pg_type.h"
+#include "commands/prepare.h"
 #if PG_VERSION_NUM >= 90500
 #include "common/pg_lzcompress.h"
 #endif
@@ -51,6 +52,7 @@
 #include "utils/pg_lsn.h"
 #endif
 #include "utils/timestamp.h"
+#include "utils/plancache.h"
 #include "utils/varbit.h"
 
 PG_MODULE_MAGIC;
@@ -98,6 +100,9 @@ static struct varlena *PGLZDecompress(struct varlena *source);
 PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
 #endif
 PG_FUNCTION_INFO_V1(pg_stat_print_memory_context);
+#if PG_VERSION_NUM >= 90200
+PG_FUNCTION_INFO_V1(pg_cached_plan_source);
+#endif
 PG_FUNCTION_INFO_V1(pg_signal_process);
 PG_FUNCTION_INFO_V1(pg_get_priority);
 PG_FUNCTION_INFO_V1(pg_set_priority);
@@ -139,6 +144,9 @@ PG_FUNCTION_INFO_V1(pg_cheat_saslprep);
  */
 #if PG_VERSION_NUM < 90400
 Datum pg_stat_print_memory_context(PG_FUNCTION_ARGS);
+#if PG_VERSION_NUM >= 90200
+Datum pg_cached_plan_source(PG_FUNCTION_ARGS);
+#endif
 Datum pg_signal_process(PG_FUNCTION_ARGS);
 Datum pg_get_priority(PG_FUNCTION_ARGS);
 Datum pg_set_priority(PG_FUNCTION_ARGS);
@@ -491,6 +499,59 @@ PrintMemoryContextStats(MemoryContext context, int level)
 	for (child = context->firstchild; child != NULL; child = child->nextchild)
 		PrintMemoryContextStats(child, level + 1);
 }
+
+#if PG_VERSION_NUM >= 90200
+/*
+ * Return information about the cached plan of the specified
+ * prepared statement.
+ */
+Datum
+pg_cached_plan_source(PG_FUNCTION_ARGS)
+{
+	char	*stmt_name = text_to_cstring(PG_GETARG_TEXT_P(0));
+	TupleDesc	tupdesc;
+	Datum			values[5];
+	bool				nulls[5];
+	PreparedStatement	*stmt;
+	CachedPlanSource	*plansource;
+
+	/* Look it up in the hash table */
+	stmt = FetchPreparedStatement(stmt_name, true);
+	plansource = stmt->plansource;
+
+	/* Initialize values and NULL flags arrays */
+	MemSet(values, 0, sizeof(values));
+	MemSet(nulls, 0, sizeof(nulls));
+
+	/* Initialize attributes information in the tuple descriptor */
+	tupdesc = CreateTemplateTupleDesc(5, false);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 1, "generic_cost",
+					   FLOAT8OID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 2, "total_custom_cost",
+					   FLOAT8OID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 3, "num_custom_plans",
+					   INT4OID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 4, "force_generic",
+					   BOOLOID, -1, 0);
+	TupleDescInitEntry(tupdesc, (AttrNumber) 5, "force_custom",
+					   BOOLOID, -1, 0);
+
+	BlessTupleDesc(tupdesc);
+
+	/* Fill values and NULLs */
+	values[0] = Float8GetDatum(plansource->generic_cost);
+	values[1] = Float8GetDatum(plansource->total_custom_cost);
+	values[2] = Int32GetDatum(plansource->num_custom_plans);
+	if (plansource->cursor_options & CURSOR_OPT_GENERIC_PLAN)
+		values[3] = true;
+	if (plansource->cursor_options & CURSOR_OPT_CUSTOM_PLAN)
+		values[4] = true;
+
+	/* Returns the record as Datum */
+	PG_RETURN_DATUM(HeapTupleGetDatum(
+									  heap_form_tuple(tupdesc, values, nulls)));
+}
+#endif	/* PG_VERSION_NUM >= 90200 */
 
 /*
  * Send a signal to PostgreSQL server process.
