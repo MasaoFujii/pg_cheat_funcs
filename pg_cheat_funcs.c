@@ -444,7 +444,11 @@ PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
 
 	/* Examine the context itself */
 	memset(&stat, 0, sizeof(stat));
+#if PG_VERSION_NUM >= 110000
+	(*context->methods->stats) (context, NULL, (void *) &level, &stat);
+#else
 	(*context->methods->stats) (context, level, false, &stat);
+#endif
 
 	memset(nulls, 0, sizeof(nulls));
 	values[0] = CStringGetTextDatum(context->name);
@@ -479,6 +483,24 @@ pg_stat_print_memory_context(PG_FUNCTION_ARGS)
 	PG_RETURN_VOID();
 }
 
+#if  PG_VERSION_NUM >= 110000
+/*
+ * Simple version of MemoryContextStatsPrint() added in PostgreSQL 11.
+ */
+static void
+SimpleMemoryContextStatsPrint(MemoryContext context, void *passthru,
+						const char *stats_string)
+{
+	int			level = *(int *) passthru;
+	const char *name = context->name;
+	int			i;
+
+	for (i = 0; i < level; i++)
+		fprintf(stderr, "  ");
+	fprintf(stderr, "%s: %s/n", name, stats_string);
+}
+#endif	/* PG_VERSION_NUM >= 110000 */
+
 /*
  * Print statistics about the named context and all its descendants.
  */
@@ -490,7 +512,10 @@ PrintMemoryContextStats(MemoryContext context, int level)
 	if (context == NULL)
 		return;
 
-#if PG_VERSION_NUM >= 90600
+#if  PG_VERSION_NUM >= 110000
+	(*context->methods->stats) (context, SimpleMemoryContextStatsPrint,
+								(void *) &level, NULL);
+#elif PG_VERSION_NUM >= 90600
 	(*context->methods->stats) (context, level, true, NULL);
 #else
 	(*context->methods->stats) (context, level);
