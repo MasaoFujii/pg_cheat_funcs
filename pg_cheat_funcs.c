@@ -549,7 +549,11 @@ pg_cached_plan_source(PG_FUNCTION_ARGS)
 	MemSet(nulls, 0, sizeof(nulls));
 
 	/* Initialize attributes information in the tuple descriptor */
+#if PG_VERSION_NUM > 110000
+	tupdesc = CreateTemplateTupleDesc(5);
+#else
 	tupdesc = CreateTemplateTupleDesc(5, false);
+#endif
 	TupleDescInitEntry(tupdesc, (AttrNumber) 1, "generic_cost",
 					   FLOAT8OID, -1, 0);
 	TupleDescInitEntry(tupdesc, (AttrNumber) 2, "total_custom_cost",
@@ -981,7 +985,11 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 	MemSet(nulls, 0, sizeof(nulls));
 
 	/* Initialise attributes information in the tuple descriptor */
+#if PG_VERSION_NUM > 110000
+	tupdesc = CreateTemplateTupleDesc(PG_XID_ASSIGNMENT_COLS);
+#else
 	tupdesc = CreateTemplateTupleDesc(PG_XID_ASSIGNMENT_COLS, false);
+#endif
 	TupleDescInitEntry(tupdesc, (AttrNumber) 1, "next_xid",
 					   XIDOID, -1, 0);
 	TupleDescInitEntry(tupdesc, (AttrNumber) 2, "oldest_xid",
@@ -1069,7 +1077,11 @@ pg_oid_assignment(PG_FUNCTION_ARGS)
 	MemSet(nulls, 0, sizeof(nulls));
 
 	/* Initialise attributes information in the tuple descriptor */
+#if PG_VERSION_NUM > 110000
+	tupdesc = CreateTemplateTupleDesc(PG_OID_ASSIGNMENT_COLS);
+#else
 	tupdesc = CreateTemplateTupleDesc(PG_OID_ASSIGNMENT_COLS, false);
+#endif
 	TupleDescInitEntry(tupdesc, (AttrNumber) 1, "next_oid",
 					   OIDOID, -1, 0);
 	TupleDescInitEntry(tupdesc, (AttrNumber) 2, "oid_count",
@@ -1274,7 +1286,11 @@ Datum
 pg_backend_start_time(PG_FUNCTION_ARGS)
 {
 	if (MyProcPort)
+#if PG_VERSION_NUM > 110000
+		PG_RETURN_TIMESTAMPTZ(MyStartTimestamp);
+#else
 		PG_RETURN_TIMESTAMPTZ(MyProcPort->SessionStartTime);
+#endif
 	else
 		PG_RETURN_NULL();
 }
