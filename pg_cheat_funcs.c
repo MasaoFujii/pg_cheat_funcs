@@ -549,7 +549,7 @@ pg_cached_plan_source(PG_FUNCTION_ARGS)
 	MemSet(nulls, 0, sizeof(nulls));
 
 	/* Initialize attributes information in the tuple descriptor */
-#if PG_VERSION_NUM > 110000
+#if PG_VERSION_NUM >= 120000
 	tupdesc = CreateTemplateTupleDesc(5);
 #else
 	tupdesc = CreateTemplateTupleDesc(5, false);
@@ -985,7 +985,7 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 	MemSet(nulls, 0, sizeof(nulls));
 
 	/* Initialise attributes information in the tuple descriptor */
-#if PG_VERSION_NUM > 110000
+#if PG_VERSION_NUM >= 120000
 	tupdesc = CreateTemplateTupleDesc(PG_XID_ASSIGNMENT_COLS);
 #else
 	tupdesc = CreateTemplateTupleDesc(PG_XID_ASSIGNMENT_COLS, false);
@@ -1077,7 +1077,7 @@ pg_oid_assignment(PG_FUNCTION_ARGS)
 	MemSet(nulls, 0, sizeof(nulls));
 
 	/* Initialise attributes information in the tuple descriptor */
-#if PG_VERSION_NUM > 110000
+#if PG_VERSION_NUM >= 120000
 	tupdesc = CreateTemplateTupleDesc(PG_OID_ASSIGNMENT_COLS);
 #else
 	tupdesc = CreateTemplateTupleDesc(PG_OID_ASSIGNMENT_COLS, false);
@@ -1286,7 +1286,7 @@ Datum
 pg_backend_start_time(PG_FUNCTION_ARGS)
 {
 	if (MyProcPort)
-#if PG_VERSION_NUM > 110000
+#if PG_VERSION_NUM >= 120000
 		PG_RETURN_TIMESTAMPTZ(MyStartTimestamp);
 #else
 		PG_RETURN_TIMESTAMPTZ(MyProcPort->SessionStartTime);
