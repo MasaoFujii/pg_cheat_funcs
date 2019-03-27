@@ -292,6 +292,11 @@ and returns the number of bytes written.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### void pg_file_fsync(filepath text)
+Try to fsync the file or directory.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### text to_octal(integer or bigint)
 Convert number to its equivalent octal representation.
 

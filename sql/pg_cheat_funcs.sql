@@ -40,4 +40,7 @@ SELECT pg_hex_to_text(upper('506f737467726553514c'));
 
 SELECT pg_backend_start_time() = backend_start FROM pg_stat_get_activity(pg_backend_pid());
 
+SELECT pg_file_fsync('global');
+SELECT pg_file_fsync('global/pg_control');
+
 DROP EXTENSION pg_cheat_funcs;
