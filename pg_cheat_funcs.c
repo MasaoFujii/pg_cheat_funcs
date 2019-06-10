@@ -930,6 +930,9 @@ Datum
 pg_set_next_xid(PG_FUNCTION_ARGS)
 {
 	TransactionId xid = PG_GETARG_UINT32(0);
+#if PG_VERSION_NUM >= 120000
+	uint32		epoch;
+#endif
 
 	if (RecoveryInProgress())
 		ereport(ERROR,
@@ -938,7 +941,13 @@ pg_set_next_xid(PG_FUNCTION_ARGS)
 		 errhint("pg_set_next_xid() cannot be executed during recovery.")));
 
 	LWLockAcquire(XidGenLock, LW_EXCLUSIVE);
+#if PG_VERSION_NUM >= 120000
+	epoch = EpochFromFullTransactionId(ShmemVariableCache->nextFullXid);
+	ShmemVariableCache->nextFullXid
+		= FullTransactionIdFromEpochAndXid(epoch, xid);
+#else
 	ShmemVariableCache->nextXid = xid;
+#endif
 	LWLockRelease(XidGenLock);
 
 	/*
@@ -982,6 +991,9 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 	TransactionId xidStopLimit;
 	TransactionId xidWrapLimit;
 	Oid			oldestXidDB;
+#if PG_VERSION_NUM >= 120000
+	FullTransactionId full_xid;
+#endif
 
 	/* Initialise values and NULL flags arrays */
 	MemSet(values, 0, sizeof(values));
@@ -1012,7 +1024,12 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 
 	/* Take a lock to ensure value consistency */
 	LWLockAcquire(XidGenLock, LW_SHARED);
+#if PG_VERSION_NUM >= 120000
+	full_xid = ShmemVariableCache->nextFullXid;
+	nextXid = XidFromFullTransactionId(full_xid);
+#else
 	nextXid = ShmemVariableCache->nextXid;
+#endif
 	oldestXid = ShmemVariableCache->oldestXid;
 	xidVacLimit = ShmemVariableCache->xidVacLimit;
 	xidWarnLimit = ShmemVariableCache->xidWarnLimit;
@@ -1758,9 +1775,15 @@ PGLZDecompress(struct varlena *source)
 		memcpy(VARDATA(dest), PGLZ_RAWDATA(source), orig_len);
 	else
 	{
+#if PG_VERSION_NUM >= 120000
+		if (pglz_decompress(PGLZ_RAWDATA(source),
+							VARSIZE(source) - PGLZ_HDRSZ,
+							VARDATA(dest), orig_len, true) < 0)
+#else
 		if (pglz_decompress(PGLZ_RAWDATA(source),
 							VARSIZE(source) - PGLZ_HDRSZ,
 							VARDATA(dest), orig_len) < 0)
+#endif
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 (errmsg("specified compressed data is corrupted"),
