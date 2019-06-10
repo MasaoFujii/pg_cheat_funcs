@@ -500,7 +500,7 @@ SimpleMemoryContextStatsPrint(MemoryContext context, void *passthru,
 
 	for (i = 0; i < level; i++)
 		fprintf(stderr, "  ");
-	fprintf(stderr, "%s: %s/n", name, stats_string);
+	fprintf(stderr, "%s: %s\n", name, stats_string);
 }
 #endif	/* PG_VERSION_NUM >= 110000 */
 
