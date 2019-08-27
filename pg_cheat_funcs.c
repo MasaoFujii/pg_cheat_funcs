@@ -308,6 +308,12 @@ CheatExecutorEnd(QueryDesc *queryDesc)
 		PrintMemoryContextStats(TopMemoryContext, 0);
 }
 
+#if PG_VERSION_NUM >= 130000
+#define	CHEAT_LNEXT(l, c)	lnext(l, c)
+#else
+#define	CHEAT_LNEXT(l, c)	lnext(c)
+#endif
+
 /*
  * ClientAuthentication hook
  */
@@ -329,16 +335,16 @@ CheatClientAuthentication(Port *port, int status)
 			char	   *name = lfirst(cell);
 			char		*value;
 
-			next = lnext(cell);
+			next = CHEAT_LNEXT(port->guc_options, cell);
 
 			if (strcmp(name, "application_name") != 0)
 			{
-				next = lnext(next);
+				next = CHEAT_LNEXT(port->guc_options, next);
 				continue;
 			}
 
 			cell = next;
-			next = lnext(next);
+			next = CHEAT_LNEXT(port->guc_options, next);
 			value = lfirst(cell);
 			SetConfigOption("pg_cheat_funcs.hidden_appname", value,
 							PGC_USERSET, PGC_S_CLIENT);
@@ -356,10 +362,10 @@ CheatClientAuthentication(Port *port, int status)
 			char	   *value;
 
 			name = lfirst(cell);
-			cell = lnext(cell);
+			cell = CHEAT_LNEXT(port->guc_options, cell);
 
 			value = lfirst(cell);
-			cell = lnext(cell);
+			cell = CHEAT_LNEXT(port->guc_options, cell);
 
 			ereport(LOG,
 					(errmsg("session-start options: %s = %s", name, value)));
