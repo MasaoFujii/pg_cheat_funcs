@@ -218,6 +218,12 @@ RETURNS timestamptz
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT STABLE;
 
+CREATE FUNCTION pg_tablespace_version_directory()
+RETURNS text
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT STABLE;
+REVOKE ALL ON FUNCTION pg_tablespace_version_directory() FROM PUBLIC;
+
 CREATE FUNCTION pg_file_write_binary(text, bytea)
 RETURNS bigint
 AS 'MODULE_PATHNAME'

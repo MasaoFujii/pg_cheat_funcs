@@ -40,6 +40,8 @@ SELECT pg_hex_to_text(upper('506f737467726553514c'));
 
 SELECT pg_backend_start_time() = backend_start FROM pg_stat_get_activity(pg_backend_pid());
 
+SELECT substring(pg_tablespace_version_directory(), 1, 3);
+
 SELECT pg_file_fsync('global');
 SELECT pg_file_fsync('global/pg_control');
 

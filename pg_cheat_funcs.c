@@ -18,6 +18,7 @@
 #include "access/subtrans.h"
 #include "access/xlog_internal.h"
 #include "access/transam.h"
+#include "catalog/catalog.h"
 #include "catalog/pg_type.h"
 #include "commands/prepare.h"
 #if PG_VERSION_NUM >= 90500
@@ -126,6 +127,7 @@ PG_FUNCTION_INFO_V1(pg_recovery_settings);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 PG_FUNCTION_INFO_V1(pg_backend_start_time);
+PG_FUNCTION_INFO_V1(pg_tablespace_version_directory);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
 PG_FUNCTION_INFO_V1(pg_file_fsync);
 PG_FUNCTION_INFO_V1(to_octal32);
@@ -164,6 +166,7 @@ Datum pg_recovery_settings(PG_FUNCTION_ARGS);
 Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
 Datum pg_backend_start_time(PG_FUNCTION_ARGS);
+Datum pg_tablespace_version_directory(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
 Datum pg_file_fsync(PG_FUNCTION_ARGS);
 Datum to_octal32(PG_FUNCTION_ARGS);
@@ -1319,6 +1322,15 @@ pg_backend_start_time(PG_FUNCTION_ARGS)
 #endif
 	else
 		PG_RETURN_NULL();
+}
+
+/*
+ * Return the name of major-version-specific tablespace subdirectory
+ */
+Datum
+pg_tablespace_version_directory(PG_FUNCTION_ARGS)
+{
+	PG_RETURN_TEXT_P(cstring_to_text(TABLESPACE_VERSION_DIRECTORY));
 }
 
 /*
