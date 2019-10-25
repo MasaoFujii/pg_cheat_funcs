@@ -24,6 +24,9 @@
 #if PG_VERSION_NUM >= 90500
 #include "common/pg_lzcompress.h"
 #endif
+#if PG_VERSION_NUM >= 90300
+#include "common/relpath.h"
+#endif
 #if PG_VERSION_NUM >= 100000
 #include "common/saslprep.h"
 #endif
