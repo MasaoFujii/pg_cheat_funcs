@@ -283,6 +283,11 @@ Return the Process ID of the postmaster process.
 Return the time when the server process attached to the current session
 was started.
 
+### SETOF text pg_list_relation_filepath(relation regclass)
+List the file path names of the specified relation.
+Note that this function returns only the path name of
+the first segment file in PostgreSQL 9.4 or before.
+
 ### text pg_tablespace_version_direcotry()
 Return the name of major-version-specific tablespace subdirectory.
 

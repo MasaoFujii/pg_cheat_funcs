@@ -218,6 +218,28 @@ RETURNS timestamptz
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT STABLE;
 
+CREATE FUNCTION pg_list_relation_filepath(relation regclass)
+    RETURNS SETOF text AS $$
+DECLARE
+    segcount bigint := 1;
+    relationpath text;
+    pathname text;
+BEGIN
+    relationpath := pg_relation_filepath(relation);
+    RETURN NEXT relationpath;
+    IF current_setting('server_version_num')::integer < 90500 THEN
+	RETURN;
+    END IF;
+    LOOP
+        pathname := relationpath || '.' || segcount;
+        EXIT WHEN pg_stat_file(pathname, true) IS NULL;
+        RETURN NEXT pathname;
+        segcount := segcount + 1;
+    END LOOP;
+    RETURN;
+END;
+$$ LANGUAGE plpgsql STRICT VOLATILE;
+
 CREATE FUNCTION pg_tablespace_version_directory()
 RETURNS text
 AS 'MODULE_PATHNAME'
