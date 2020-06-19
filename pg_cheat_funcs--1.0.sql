@@ -88,28 +88,31 @@ BEGIN
         AS 'MODULE_PATHNAME'
         LANGUAGE C STRICT VOLATILE;
 
-        -- Aggregate functions for pg_lsn data type.
-        CREATE FUNCTION pg_lsn_larger(pg_lsn, pg_lsn)
-        RETURNS pg_lsn
-        AS 'MODULE_PATHNAME'
-        LANGUAGE C STRICT IMMUTABLE;
+        -- Create min() and max() aggregates for pg_lsn in 12 or before.
+	-- They are supported in core since 13.
+	IF pgversion < 130000 THEN
+            CREATE FUNCTION pg_lsn_larger(pg_lsn, pg_lsn)
+            RETURNS pg_lsn
+            AS 'MODULE_PATHNAME'
+            LANGUAGE C STRICT IMMUTABLE;
 
-        CREATE FUNCTION pg_lsn_smaller(pg_lsn, pg_lsn)
-        RETURNS pg_lsn
-        AS 'MODULE_PATHNAME'
-        LANGUAGE C STRICT IMMUTABLE;
+            CREATE FUNCTION pg_lsn_smaller(pg_lsn, pg_lsn)
+            RETURNS pg_lsn
+            AS 'MODULE_PATHNAME'
+            LANGUAGE C STRICT IMMUTABLE;
 
-        CREATE AGGREGATE max(pg_lsn)  (
-            SFUNC = pg_lsn_larger,
-            STYPE = pg_lsn,
-            SORTOP = >
-        );
+            CREATE AGGREGATE max(pg_lsn)  (
+                SFUNC = pg_lsn_larger,
+                STYPE = pg_lsn,
+                SORTOP = >
+            );
 
-        CREATE AGGREGATE min(pg_lsn)  (
-            SFUNC = pg_lsn_smaller,
-            STYPE = pg_lsn,
-            SORTOP = <
-        );
+            CREATE AGGREGATE min(pg_lsn)  (
+                SFUNC = pg_lsn_smaller,
+                STYPE = pg_lsn,
+                SORTOP = <
+            );
+        END IF;
     END IF;
 END;
 $$;
