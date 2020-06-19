@@ -193,11 +193,22 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_checkpoint(bool, bool, bool) FROM PUBLIC;
 
-CREATE FUNCTION pg_promote(bool DEFAULT true)
-RETURNS void
-AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT VOLATILE;
-REVOKE ALL ON FUNCTION pg_promote(bool) FROM PUBLIC;
+-- Create pg_promote() only in 11 or before because it's supported
+-- in core since 12.
+DO $$
+DECLARE
+    pgversion INTEGER;
+BEGIN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion < 120000 THEN
+        CREATE FUNCTION pg_promote(bool DEFAULT true)
+        RETURNS void
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT VOLATILE;
+        REVOKE ALL ON FUNCTION pg_promote(bool) FROM PUBLIC;
+    END IF;
+END;
+$$;
 
 CREATE FUNCTION pg_recovery_settings(OUT name text, OUT setting text)
 RETURNS SETOF record

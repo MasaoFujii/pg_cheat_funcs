@@ -114,8 +114,10 @@ PG_FUNCTION_INFO_V1(pg_set_priority);
 PG_FUNCTION_INFO_V1(pg_process_config_file);
 #if PG_VERSION_NUM >= 90400
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
+#if PG_VERSION_NUM < 130000
 PG_FUNCTION_INFO_V1(pg_lsn_larger);
 PG_FUNCTION_INFO_V1(pg_lsn_smaller);
+#endif
 PG_FUNCTION_INFO_V1(pg_stat_get_syncrep_waiters);
 PG_FUNCTION_INFO_V1(pg_wait_syncrep);
 #endif
@@ -125,7 +127,9 @@ PG_FUNCTION_INFO_V1(pg_set_next_oid);
 PG_FUNCTION_INFO_V1(pg_oid_assignment);
 PG_FUNCTION_INFO_V1(pg_advance_vacuum_cleanup_age);
 PG_FUNCTION_INFO_V1(pg_checkpoint);
+#if PG_VERSION_NUM < 120000
 PG_FUNCTION_INFO_V1(pg_promote);
+#endif
 PG_FUNCTION_INFO_V1(pg_recovery_settings);
 PG_FUNCTION_INFO_V1(pg_show_primary_conninfo);
 PG_FUNCTION_INFO_V1(pg_postmaster_pid);
@@ -164,7 +168,9 @@ Datum pg_set_next_oid(PG_FUNCTION_ARGS);
 Datum pg_oid_assignment(PG_FUNCTION_ARGS);
 Datum pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS);
 Datum pg_checkpoint(PG_FUNCTION_ARGS);
+#if PG_VERSION_NUM < 120000
 Datum pg_promote(PG_FUNCTION_ARGS);
+#endif
 Datum pg_recovery_settings(PG_FUNCTION_ARGS);
 Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
 Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
@@ -204,7 +210,9 @@ static void SetProcessPriority(int pid, int priority, int elevel);
 static void CheckPostgresPid(int pid);
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
+#if PG_VERSION_NUM < 120000
 static void CreateEmptyFile(const char *filepath);
+#endif
 static text *Bits8GetText(bits8 b1, bits8 b2, bits8 c3, int len);
 
 static void assign_scheduling_priority(int newval, void *extra);
@@ -818,7 +826,7 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
 }
 
 /*
- * Create min() and max() aggregates for pg_lsn in 12 or before.
+ * Create min() and max() aggregates for pg_lsn only in 12 or before.
  * They are supported in core since 13.
  */
 #if PG_VERSION_NUM < 130000
@@ -1189,6 +1197,11 @@ pg_checkpoint(PG_FUNCTION_ARGS)
 }
 
 /*
+ * Create pg_promote() only in 11 or before.
+ * It's supported in core since 12.
+ */
+#if PG_VERSION_NUM < 120000
+/*
  * Promote the standby server.
  */
 Datum
@@ -1238,6 +1251,7 @@ CreateEmptyFile(const char *filepath)
 				(errcode_for_file_access(),
 				 errmsg("could not write file \"%s\": %m", filepath)));
 }
+#endif	/* PG_VERSION_NUM < 120000 */
 
 /*
  * Return a table of all parameter settings in recovery.conf.

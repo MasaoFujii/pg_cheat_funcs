@@ -127,7 +127,7 @@ This function is available only in PostgreSQL 9.4 or later.
 This is max() aggregate function for pg_lsn data type.
 This aggregate function computes and returns a maximum pg_lsn value
 from a set of pg_lsn input values.
-This function is available only between PostgreSQL 9.4 and 12.
+This function is available only in  between PostgreSQL 9.4 and 12.
 Since 13, this is supported in PostgreSQL core.
 
 ### pg_lsn min(SETOF pg_lsn)
@@ -260,6 +260,9 @@ in PostgreSQL 9.2 or before whether fast is true or false
 because fast promotion is available only in 9.3 or later.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
+
+This function is available only in 11 or before.
+Since 12, this is supported in PostgreSQL core.
 
 ### SETOF record pg_recovery_settings()
 Return information about all parameter settings in recovery.conf.
