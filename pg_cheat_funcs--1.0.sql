@@ -89,8 +89,8 @@ BEGIN
         LANGUAGE C STRICT VOLATILE;
 
         -- Create min() and max() aggregates for pg_lsn in 12 or before.
-	-- They are supported in core since 13.
-	IF pgversion < 130000 THEN
+        -- They are supported in core since 13.
+        IF pgversion < 130000 THEN
             CREATE FUNCTION pg_lsn_larger(pg_lsn, pg_lsn)
             RETURNS pg_lsn
             AS 'MODULE_PATHNAME'

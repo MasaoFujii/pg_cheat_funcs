@@ -818,6 +818,11 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
 }
 
 /*
+ * Create min() and max() aggregates for pg_lsn in 12 or before.
+ * They are supported in core since 13.
+ */
+#if PG_VERSION_NUM < 130000
+/*
  * Return larger pg_lsn value.
  */
 Datum
@@ -846,6 +851,7 @@ pg_lsn_smaller(PG_FUNCTION_ARGS)
 
 	PG_RETURN_LSN(result);
 }
+#endif	/* PG_VERSION_NUM < 130000 */
 
 /*
  * Return statistics about all syncrep waiters.
