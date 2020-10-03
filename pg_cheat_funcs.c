@@ -967,7 +967,11 @@ pg_set_next_xid(PG_FUNCTION_ARGS)
 		 errhint("pg_set_next_xid() cannot be executed during recovery.")));
 
 	LWLockAcquire(XidGenLock, LW_EXCLUSIVE);
-#if PG_VERSION_NUM >= 120000
+#if PG_VERSION_NUM >= 140000
+	epoch = EpochFromFullTransactionId(ShmemVariableCache->nextXid);
+	ShmemVariableCache->nextXid
+		= FullTransactionIdFromEpochAndXid(epoch, xid);
+#elif PG_VERSION_NUM >= 120000
 	epoch = EpochFromFullTransactionId(ShmemVariableCache->nextFullXid);
 	ShmemVariableCache->nextFullXid
 		= FullTransactionIdFromEpochAndXid(epoch, xid);
@@ -1050,7 +1054,10 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 
 	/* Take a lock to ensure value consistency */
 	LWLockAcquire(XidGenLock, LW_SHARED);
-#if PG_VERSION_NUM >= 120000
+#if PG_VERSION_NUM >= 140000
+	full_xid = ShmemVariableCache->nextXid;
+	nextXid = XidFromFullTransactionId(full_xid);
+#elif PG_VERSION_NUM >= 120000
 	full_xid = ShmemVariableCache->nextFullXid;
 	nextXid = XidFromFullTransactionId(full_xid);
 #else
