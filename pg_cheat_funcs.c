@@ -136,7 +136,9 @@ PG_FUNCTION_INFO_V1(pg_postmaster_pid);
 PG_FUNCTION_INFO_V1(pg_backend_start_time);
 PG_FUNCTION_INFO_V1(pg_tablespace_version_directory);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
+#if PG_VERSION_NUM >= 90400
 PG_FUNCTION_INFO_V1(pg_file_fsync);
+#endif /* PG_VERSION_NUM >= 90400 */
 PG_FUNCTION_INFO_V1(to_octal32);
 PG_FUNCTION_INFO_V1(to_octal64);
 PG_FUNCTION_INFO_V1(pg_text_to_hex);
@@ -177,7 +179,6 @@ Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
 Datum pg_backend_start_time(PG_FUNCTION_ARGS);
 Datum pg_tablespace_version_directory(PG_FUNCTION_ARGS);
 Datum pg_file_write_binary(PG_FUNCTION_ARGS);
-Datum pg_file_fsync(PG_FUNCTION_ARGS);
 Datum to_octal32(PG_FUNCTION_ARGS);
 Datum to_octal64(PG_FUNCTION_ARGS);
 Datum pg_text_to_hex(PG_FUNCTION_ARGS);
@@ -1398,6 +1399,7 @@ pg_file_write_binary(PG_FUNCTION_ARGS)
 	PG_RETURN_INT64(count);
 }
 
+#if PG_VERSION_NUM >= 90400
 /*
  * Fsync a file or directory.
  */
@@ -1419,6 +1421,7 @@ pg_file_fsync(PG_FUNCTION_ARGS)
 
 	PG_RETURN_VOID();
 }
+#endif /* PG_VERSION_NUM >= 90400 */
 
 #define OCTALBASE 8
 /*

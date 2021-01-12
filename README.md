@@ -309,6 +309,7 @@ but other users can be granted EXECUTE to run the function.
 
 ### void pg_file_fsync(filepath text)
 Try to fsync the file or directory.
+This function is available only in PostgreSQL 9.4 or later.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
