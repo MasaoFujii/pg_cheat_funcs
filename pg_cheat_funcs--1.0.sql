@@ -420,3 +420,23 @@ BEGIN
     END IF;
 END;
 $$;
+
+CREATE FUNCTION pg_advisory_xact_unlock(bigint)
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'pg_advisory_xact_unlock_int8'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION pg_advisory_xact_unlock_shared(bigint)
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'pg_advisory_xact_unlock_shared_int8'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION pg_advisory_xact_unlock(integer, integer)
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'pg_advisory_xact_unlock_int4'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION pg_advisory_xact_unlock_shared(integer, integer)
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'pg_advisory_xact_unlock_shared_int4'
+LANGUAGE C STRICT IMMUTABLE;

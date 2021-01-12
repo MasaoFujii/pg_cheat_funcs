@@ -441,6 +441,24 @@ Note that an error is raised if the input is not a valid UTF-8 string or
 the normalized string contains characters prohibited by the SASLprep profile.
 This function is available only in PostgreSQL 10 or later.
 
+### pg_advisory_xact_unlock (bigint)
+Release a previously-acquired exclusive transaction-level advisory lock.
+Return true if the lock is successfully released. If the lock was not held,
+false is returned, and in addition, an SQL warning will be reported
+by the server.
+
+### pg_advisory_xact_unlock_shared (bigint)
+Release a previously-acquired shared transaction-level advisory lock.
+Return true if the lock is successfully released. If the lock was not held,
+false is returned, and in addition, an SQL warning will be reported
+by the server.
+
+### pg_advisory_xact_unlock (integer, integer)
+Same as pg_advisory_xact_unlock(bigint).
+
+### pg_advisory_xact_unlock_shared (integer, integer)
+Same as pg_advisory_xact_unlock_shared(bigint).
+
 ## Encoding Conversions
 
 ### pg_euc_jp_to_utf8

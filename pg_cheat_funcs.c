@@ -149,6 +149,10 @@ PG_FUNCTION_INFO_V1(pg_euc_jp_to_utf8);
 #if PG_VERSION_NUM >= 100000
 PG_FUNCTION_INFO_V1(pg_cheat_saslprep);
 #endif
+PG_FUNCTION_INFO_V1(pg_advisory_xact_unlock_int8);
+PG_FUNCTION_INFO_V1(pg_advisory_xact_unlock_shared_int8);
+PG_FUNCTION_INFO_V1(pg_advisory_xact_unlock_int4);
+PG_FUNCTION_INFO_V1(pg_advisory_xact_unlock_shared_int4);
 
 /*
  * The function prototypes are created as a part of PG_FUNCTION_INFO_V1
@@ -186,6 +190,10 @@ Datum pg_hex_to_text(PG_FUNCTION_ARGS);
 Datum pg_chr(PG_FUNCTION_ARGS);
 Datum pg_eucjp(PG_FUNCTION_ARGS);
 Datum pg_euc_jp_to_utf8(PG_FUNCTION_ARGS);
+Datum pg_advisory_xact_unlock_int8(PG_FUNCTION_ARGS);
+Datum pg_advisory_xact_unlock_shared_int8(PG_FUNCTION_ARGS);
+Datum pg_advisory_xact_unlock_int4(PG_FUNCTION_ARGS);
+Datum pg_advisory_xact_unlock_shared_int4(PG_FUNCTION_ARGS);
 #endif
 
 void		_PG_init(void);
@@ -1869,3 +1877,94 @@ pg_cheat_saslprep(PG_FUNCTION_ARGS)
 	PG_RETURN_TEXT_P(cstring_to_text(output));
 }
 #endif
+
+/*
+ * Functions for manipulating advisory locks.
+ * These functions are borrowed from src/backend/utils/adt/lockfuncs.c.
+ */
+#define SET_LOCKTAG_INT64(tag, key64) \
+	SET_LOCKTAG_ADVISORY(tag, \
+						 MyDatabaseId, \
+						 (uint32) ((key64) >> 32), \
+						 (uint32) (key64), \
+						 1)
+#define SET_LOCKTAG_INT32(tag, key1, key2) \
+	SET_LOCKTAG_ADVISORY(tag, MyDatabaseId, key1, key2, 2)
+
+/*
+ * Release xact scoped exclusive lock an int8 key.
+ *
+ * Return true if successful, false if lock was not held.
+ */
+Datum
+pg_advisory_xact_unlock_int8(PG_FUNCTION_ARGS)
+{
+	int64		key = PG_GETARG_INT64(0);
+	LOCKTAG		tag;
+	bool		res;
+
+	SET_LOCKTAG_INT64(tag, key);
+
+	res = LockRelease(&tag, ExclusiveLock, false);
+
+	PG_RETURN_BOOL(res);
+}
+
+/*
+ * Release xact scoped share lock on an int8 key.
+ *
+ * Return true if successful, false if lock was not held.
+ */
+Datum
+pg_advisory_xact_unlock_shared_int8(PG_FUNCTION_ARGS)
+{
+	int64		key = PG_GETARG_INT64(0);
+	LOCKTAG		tag;
+	bool		res;
+
+	SET_LOCKTAG_INT64(tag, key);
+
+	res = LockRelease(&tag, ShareLock, false);
+
+	PG_RETURN_BOOL(res);
+}
+
+/*
+ * Release xact scoped exclusive lock on 2 int4 keys.
+ *
+ * Return true if successful, false if lock was not held.
+*/
+Datum
+pg_advisory_xact_unlock_int4(PG_FUNCTION_ARGS)
+{
+	int32		key1 = PG_GETARG_INT32(0);
+	int32		key2 = PG_GETARG_INT32(1);
+	LOCKTAG		tag;
+	bool		res;
+
+	SET_LOCKTAG_INT32(tag, key1, key2);
+
+	res = LockRelease(&tag, ExclusiveLock, false);
+
+	PG_RETURN_BOOL(res);
+}
+
+/*
+ * Release xact scoped share lock on 2 int4 keys.
+ *
+ * Return true if successful, false if lock was not held.
+ */
+Datum
+pg_advisory_xact_unlock_shared_int4(PG_FUNCTION_ARGS)
+{
+	int32		key1 = PG_GETARG_INT32(0);
+	int32		key2 = PG_GETARG_INT32(1);
+	LOCKTAG		tag;
+	bool		res;
+
+	SET_LOCKTAG_INT32(tag, key1, key2);
+
+	res = LockRelease(&tag, ShareLock, false);
+
+	PG_RETURN_BOOL(res);
+}

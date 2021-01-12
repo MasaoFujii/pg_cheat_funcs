@@ -42,4 +42,18 @@ SELECT pg_backend_start_time() = backend_start FROM pg_stat_get_activity(pg_back
 
 SELECT substring(pg_tablespace_version_directory(), 1, 3);
 
+BEGIN;
+SELECT pg_advisory_xact_lock(111);
+SELECT pg_advisory_xact_lock(222);
+SELECT pg_advisory_xact_lock_shared(333);
+SELECT pg_advisory_xact_lock(444, 555);
+SELECT pg_advisory_xact_lock_shared(666, 777);
+SELECT classid, objid, objsubid, mode FROM pg_locks WHERE locktype = 'advisory' ORDER BY classid, objid, objsubid, mode;
+SELECT pg_advisory_xact_unlock(111);
+SELECT classid, objid, objsubid, mode FROM pg_locks WHERE locktype = 'advisory' ORDER BY classid, objid, objsubid, mode;
+SELECT pg_advisory_xact_unlock_shared(666, 777);
+SELECT classid, objid, objsubid, mode FROM pg_locks WHERE locktype = 'advisory' ORDER BY classid, objid, objsubid, mode;
+COMMIT;
+SELECT classid, objid, objsubid, mode FROM pg_locks WHERE locktype = 'advisory' ORDER BY classid, objid, objsubid, mode;
+
 DROP EXTENSION pg_cheat_funcs;

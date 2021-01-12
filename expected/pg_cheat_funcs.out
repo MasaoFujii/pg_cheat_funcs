@@ -111,4 +111,80 @@ SELECT substring(pg_tablespace_version_directory(), 1, 3);
  PG_
 (1 row)
 
+BEGIN;
+SELECT pg_advisory_xact_lock(111);
+ pg_advisory_xact_lock 
+-----------------------
+ 
+(1 row)
+
+SELECT pg_advisory_xact_lock(222);
+ pg_advisory_xact_lock 
+-----------------------
+ 
+(1 row)
+
+SELECT pg_advisory_xact_lock_shared(333);
+ pg_advisory_xact_lock_shared 
+------------------------------
+ 
+(1 row)
+
+SELECT pg_advisory_xact_lock(444, 555);
+ pg_advisory_xact_lock 
+-----------------------
+ 
+(1 row)
+
+SELECT pg_advisory_xact_lock_shared(666, 777);
+ pg_advisory_xact_lock_shared 
+------------------------------
+ 
+(1 row)
+
+SELECT classid, objid, objsubid, mode FROM pg_locks WHERE locktype = 'advisory' ORDER BY classid, objid, objsubid, mode;
+ classid | objid | objsubid |     mode      
+---------+-------+----------+---------------
+       0 |   111 |        1 | ExclusiveLock
+       0 |   222 |        1 | ExclusiveLock
+       0 |   333 |        1 | ShareLock
+     444 |   555 |        2 | ExclusiveLock
+     666 |   777 |        2 | ShareLock
+(5 rows)
+
+SELECT pg_advisory_xact_unlock(111);
+ pg_advisory_xact_unlock 
+-------------------------
+ t
+(1 row)
+
+SELECT classid, objid, objsubid, mode FROM pg_locks WHERE locktype = 'advisory' ORDER BY classid, objid, objsubid, mode;
+ classid | objid | objsubid |     mode      
+---------+-------+----------+---------------
+       0 |   222 |        1 | ExclusiveLock
+       0 |   333 |        1 | ShareLock
+     444 |   555 |        2 | ExclusiveLock
+     666 |   777 |        2 | ShareLock
+(4 rows)
+
+SELECT pg_advisory_xact_unlock_shared(666, 777);
+ pg_advisory_xact_unlock_shared 
+--------------------------------
+ t
+(1 row)
+
+SELECT classid, objid, objsubid, mode FROM pg_locks WHERE locktype = 'advisory' ORDER BY classid, objid, objsubid, mode;
+ classid | objid | objsubid |     mode      
+---------+-------+----------+---------------
+       0 |   222 |        1 | ExclusiveLock
+       0 |   333 |        1 | ShareLock
+     444 |   555 |        2 | ExclusiveLock
+(3 rows)
+
+COMMIT;
+SELECT classid, objid, objsubid, mode FROM pg_locks WHERE locktype = 'advisory' ORDER BY classid, objid, objsubid, mode;
+ classid | objid | objsubid | mode 
+---------+-------+----------+------
+(0 rows)
+
 DROP EXTENSION pg_cheat_funcs;
