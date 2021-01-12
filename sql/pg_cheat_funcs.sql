@@ -42,7 +42,4 @@ SELECT pg_backend_start_time() = backend_start FROM pg_stat_get_activity(pg_back
 
 SELECT substring(pg_tablespace_version_directory(), 1, 3);
 
-SELECT pg_file_fsync('global');
-SELECT pg_file_fsync('global/pg_control');
-
 DROP EXTENSION pg_cheat_funcs;

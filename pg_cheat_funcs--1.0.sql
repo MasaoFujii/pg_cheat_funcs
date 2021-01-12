@@ -266,11 +266,21 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_file_write_binary(text, bytea) FROM PUBLIC;
 
-CREATE FUNCTION pg_file_fsync(text)
-RETURNS void
-AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT VOLATILE;
-REVOKE ALL ON FUNCTION pg_file_fsync(text) FROM PUBLIC;
+/* pg_file_fsync function is available only in 9.4 or later */
+DO $$
+DECLARE
+    pgversion INTEGER;
+BEGIN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90400 THEN
+        CREATE FUNCTION pg_file_fsync(text)
+        RETURNS void
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT VOLATILE;
+        REVOKE ALL ON FUNCTION pg_file_fsync(text) FROM PUBLIC;
+    END IF;
+END;
+$$;
 
 CREATE FUNCTION to_octal(integer)
 RETURNS text
