@@ -1703,6 +1703,9 @@ pg_euc_jp_to_utf8(PG_FUNCTION_ARGS)
 	unsigned char *src = (unsigned char *) PG_GETARG_CSTRING(2);
 	unsigned char *dest = (unsigned char *) PG_GETARG_CSTRING(3);
 	int			len = PG_GETARG_INT32(4);
+#if PG_VERSION_NUM >= 140000
+	bool	noError = PG_GETARG_BOOL(5);
+#endif
 
 #if PG_VERSION_NUM < 90500
 	static pg_local_to_utf_combined cmap[lengthof(ExtraLUmapEUC_JP)];
@@ -1711,7 +1714,13 @@ pg_euc_jp_to_utf8(PG_FUNCTION_ARGS)
 
 	CHECK_ENCODING_CONVERSION_ARGS(PG_EUC_JP, PG_UTF8);
 
-#if PG_VERSION_NUM >= 100000
+#if PG_VERSION_NUM >= 140000
+	LocalToUtf(src, len, dest,
+			   &euc_jp_to_unicode_tree,
+			   NULL, 0,
+			   extra_euc_jp_to_utf8,
+			   PG_EUC_JP, noError);
+#elif PG_VERSION_NUM >= 100000
 	LocalToUtf(src, len, dest,
 			   &euc_jp_to_unicode_tree,
 			   NULL, 0,

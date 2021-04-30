@@ -352,10 +352,25 @@ BEGIN
 END
 $$ LANGUAGE plpgsql IMMUTABLE;
 
-CREATE FUNCTION pg_euc_jp_to_utf8(integer, integer, cstring, internal, integer)
-RETURNS void
-AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT VOLATILE;
+DO $$
+DECLARE
+    pgversion INTEGER;
+BEGIN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 140000 THEN
+        CREATE FUNCTION pg_euc_jp_to_utf8(integer, integer, cstring, internal,
+	    integer, bool DEFAULT false)
+        RETURNS integer
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT VOLATILE;
+    ELSE
+        CREATE FUNCTION pg_euc_jp_to_utf8(integer, integer, cstring, internal, integer)
+        RETURNS void
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT VOLATILE;
+    END IF;
+END;
+$$;
 
 CREATE CONVERSION pg_euc_jp_to_utf8
     FOR 'EUC_JP' TO 'UTF8' FROM pg_euc_jp_to_utf8;
