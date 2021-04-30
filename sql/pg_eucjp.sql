@@ -1,4 +1,4 @@
-CREATE DATABASE regtest_cheat_funcs_eucjp ENCODING 'EUC_JP' TEMPLATE template0;
+CREATE DATABASE regtest_cheat_funcs_eucjp ENCODING 'EUC_JP' LOCALE 'C' TEMPLATE template0;
 \c regtest_cheat_funcs_eucjp
 
 SET client_encoding TO 'EUC_JP';
