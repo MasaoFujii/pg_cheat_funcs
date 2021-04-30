@@ -100,11 +100,18 @@ static struct varlena *PGLZCompress(struct varlena *source);
 static struct varlena *PGLZDecompress(struct varlena *source);
 #endif	/* PG_VERSION_NUM >= 90500 */
 
-/* pg_stat_get_memory_context function is available only in 9.6 or later */
+/*
+ * pg_stat_get_memory_context function is available only in
+ * between 9.6 and 13. pg_stat_print_memory_context function
+ * is available only in 13 or before.
+ */
+#if PG_VERSION_NUM < 140000
 #if PG_VERSION_NUM >= 90600
 PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
-#endif
+#endif	/* PG_VERSION_ NUM >= 90600 */
 PG_FUNCTION_INFO_V1(pg_stat_print_memory_context);
+#endif	/* PG_VERSION_NUM < 140000 */
+
 #if PG_VERSION_NUM >= 90200
 PG_FUNCTION_INFO_V1(pg_cached_plan_source);
 #endif
@@ -202,13 +209,16 @@ void		_PG_fini(void);
 static void CheatExecutorEnd(QueryDesc *queryDesc);
 static void CheatClientAuthentication(Port *port, int status);
 
+#if PG_VERSION_NUM < 140000
 #if PG_VERSION_NUM >= 90600
 static void
 PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
 								TupleDesc tupdesc, MemoryContext context,
 								MemoryContext parent, int level);
-#endif
+#endif	/* PG_VERSION_NUM >= 90600 */
 static void PrintMemoryContextStats(MemoryContext context, int level);
+#endif	/* PG_VERSION_NUM < 140000 */
+
 static int GetSignalByName(char *signame);
 static ReturnSetInfo *InitReturnSetFunc(FunctionCallInfo fcinfo);
 #if PG_VERSION_NUM >= 90400
@@ -328,7 +338,11 @@ CheatExecutorEnd(QueryDesc *queryDesc)
 
 	/* Print statistics about TopMemoryContext and all its descendants */
 	if (cheat_log_memory_context)
+#if PG_VERSION_NUM >= 140000
+		HandleLogMemoryContextInterrupt();
+#else
 		PrintMemoryContextStats(TopMemoryContext, 0);
+#endif
 }
 
 #if PG_VERSION_NUM >= 130000
@@ -436,6 +450,7 @@ InitReturnSetFunc(FunctionCallInfo fcinfo)
 	return rsinfo;
 }
 
+#if PG_VERSION_NUM < 140000
 #if PG_VERSION_NUM >= 90600
 /*
  * Return statistics about all memory contexts.
@@ -556,6 +571,7 @@ PrintMemoryContextStats(MemoryContext context, int level)
 	for (child = context->firstchild; child != NULL; child = child->nextchild)
 		PrintMemoryContextStats(child, level + 1);
 }
+#endif	/* PG_VERSION_NUM < 140000 */
 
 #if PG_VERSION_NUM >= 90200
 /*

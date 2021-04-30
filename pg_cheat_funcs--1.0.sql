@@ -1,13 +1,13 @@
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 \echo Use "CREATE EXTENSION pg_cheat_funcs" to load this file. \quit
 
-/* pg_stat_get_memory_context function is available only in 9.6 or later */
+-- pg_stat_get_memory_context function is available only in between 9.6 and 13
 DO $$
 DECLARE
     pgversion INTEGER;
 BEGIN
     SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
-    IF pgversion >= 90600 THEN
+    IF pgversion >= 90600 AND pgversion < 140000 THEN
         CREATE FUNCTION pg_stat_get_memory_context(OUT name text,
             OUT parent text,
             OUT level integer,
@@ -24,11 +24,21 @@ BEGIN
 END;
 $$;
 
-CREATE FUNCTION pg_stat_print_memory_context()
-RETURNS void
-AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT VOLATILE;
-REVOKE ALL ON FUNCTION pg_stat_print_memory_context() FROM PUBLIC;
+-- pg_stat_print_memory_context function is available only in 13 or before
+DO $$
+DECLARE
+    pgversion INTEGER;
+BEGIN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion < 140000 THEN
+        CREATE FUNCTION pg_stat_print_memory_context()
+        RETURNS void
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT VOLATILE;
+        REVOKE ALL ON FUNCTION pg_stat_print_memory_context() FROM PUBLIC;
+    END IF;
+END;
+$$;
 
 /* pg_cached_plan_source function is available only in 9.2 or later */
 DO $$

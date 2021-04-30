@@ -2,8 +2,6 @@ CREATE EXTENSION pg_cheat_funcs;
 
 \pset null '(null)'
 
-SELECT pg_stat_print_memory_context();
-
 SELECT pg_signal_process(pg_postmaster_pid(), 'HUP');
 
 SET pg_cheat_funcs.scheduling_priority TO 1;

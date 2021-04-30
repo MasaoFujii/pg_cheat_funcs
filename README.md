@@ -48,7 +48,12 @@ This function returns a record, shown in the table below.
 | free_chunks   | bigint    | number of free chunks                          |
 | used_bytes    | bigint    | used space in bytes                            |
 
-This function is available only in PostgreSQL 9.6 or later.
+This function is available only in between PostgreSQL 9.6 and 13.
+Since 14, PostgreSQL core provides the view
+[pg_backend_memory_contexts](https://www.postgresql.org/docs/devel/view-pg-backend-memory-contexts.html)
+that displays all the memory contexts of the server process
+attached to the current session.
+
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
@@ -59,6 +64,13 @@ The format of log message for each memory context is:
     [name]: [total_bytes] total in [total_nblocks] blocks; [free_bytes] free ([free_chunks] chunks); [used_bytes] used
 
 For descriptions of the above fields, please see [pg_stat_get_memory_context()](#setof-record-pg_stat_get_memory_context).
+
+This function is available only in PostgreSQL 13 or before.
+Since 14, PostgreSQL core provides the function
+[pg_log_backend_memory_contexts](https://www.postgresql.org/docs/devel/functions-admin.html#FUNCTIONS-ADMIN-SIGNAL)
+that requests to log the memory contexts of the backend with
+the specified process ID.
+
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
@@ -516,7 +528,7 @@ in postgresql.conf
 if you want to use the configuration parameters which this extension provides.
 
 ### pg_cheat_funcs.log_memory_context (boolean)
-Cause statistics about all memory contexts to be logged at the end of query execution.
+Cause statistics about the memory contexts to be logged at the end of query execution.
 For details of log format, please see [pg_stat_print_memory_context()](#void-pg_stat_print_memory_context)
 This parameter is off by default. Only superusers can change this setting.
 

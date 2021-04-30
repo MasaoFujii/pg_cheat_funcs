@@ -8,7 +8,8 @@ REGRESS = pg_cheat_funcs pg_eucjp
 
 MAJORVERSION_INT = $(shell echo $(MAJORVERSION).0 | cut -d . -f 1-2 | tr -d .)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 100 ]; then echo pg_saslprep; fi)
-REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 96 ]; then echo pg_stat_get_memory_context; fi)
+REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 96 -a $(MAJORVERSION_INT) -lt 140 ]; then echo pg_stat_get_memory_context; fi)
+REGRESS += $(shell if [ $(MAJORVERSION_INT) -lt 140 ]; then echo pg_stat_print_memory_context; fi)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 95 ]; then echo pglz_compress; fi)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 94 ]; then echo pg_chr pg_94_or_later; else echo pg_chr_91_93; fi)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 92 ]; then echo pg_cached_plan; fi)
