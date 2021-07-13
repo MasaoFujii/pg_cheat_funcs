@@ -19,12 +19,6 @@ jobs:
           - REL_12_STABLE
           - REL_11_STABLE
           - REL_10_STABLE
-          - REL9_6_STABLE
-          - REL9_5_STABLE
-          - REL9_4_STABLE
-          - REL9_3_STABLE
-          - REL9_2_STABLE
-          - REL9_1_STABLE
     env:
       PGBRANCH: ${{ matrix.pgbranch }}
     steps:
