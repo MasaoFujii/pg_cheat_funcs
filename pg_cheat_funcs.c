@@ -39,6 +39,9 @@
 #include "funcapi.h"
 #include "libpq/auth.h"
 #include "libpq/libpq-be.h"
+#if PG_VERSION_NUM < 90300
+#include "libpq/pqsignal.h"
+#endif
 #include "mb/pg_wchar.h"
 #include "miscadmin.h"
 #include "postmaster/bgwriter.h"
@@ -777,9 +780,10 @@ pg_segmentation_fault(PG_FUNCTION_ARGS)
 	{
 		*ptr = 10;
 	}
-	PG_FINALLY();
+	PG_CATCH();
 	{
 		ExitOnSegvErrorLevel = FATAL;
+		PG_RE_THROW();
 	}
 	PG_END_TRY();
 
