@@ -116,6 +116,14 @@ See getpriority(2) man page for details about a scheduling priority.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### void pg_segmentation_fault(treat_fatal_as_error boolean)
+Cause segmentation fault.
+If pg_cheat_funcs.exit_on_segv is enabled and treat_fatal_as_error is true,
+segmentation fault that this function causes will lead to ERROR instead of
+FATAL error. This is intended mainly for testing.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### void pg_process_config_file()
 Read and process the configuration file.
 Note that, if an error occurs, it's logged with DEBUG2 level.
@@ -559,3 +567,8 @@ Lower values cause more favorable scheduling.
 The default value is zero.
 Any users can change this setting.
 See getpriority(2) man page for details about a scheduling priority.
+
+### pg_cheat_funcs.exit_on_segv (boolean)
+If off, which is the default, segmentation fault will lead to the server crash.
+If on, only the current session causing segmentation fault will be terminated.
+Any users can change this setting.

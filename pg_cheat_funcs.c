@@ -68,10 +68,13 @@ static bool	cheat_hide_appname = false;
 static char	*cheat_hidden_appname = NULL;
 static bool	cheat_log_session_start_options = false;
 static int		cheat_scheduling_priority = 0;
+static bool	cheat_exit_on_segv = false;
 
 /* Saved hook values in case of unload */
 static ExecutorEnd_hook_type prev_ExecutorEnd = NULL;
 static ClientAuthentication_hook_type prev_ClientAuthentication = NULL;
+
+static int	ExitOnSegvErrorLevel = FATAL;
 
 #if PG_VERSION_NUM >= 90500
 /* The information at the start of the compressed data */
@@ -118,6 +121,7 @@ PG_FUNCTION_INFO_V1(pg_cached_plan_source);
 PG_FUNCTION_INFO_V1(pg_signal_process);
 PG_FUNCTION_INFO_V1(pg_get_priority);
 PG_FUNCTION_INFO_V1(pg_set_priority);
+PG_FUNCTION_INFO_V1(pg_segmentation_fault);
 PG_FUNCTION_INFO_V1(pg_process_config_file);
 #if PG_VERSION_NUM >= 90400
 PG_FUNCTION_INFO_V1(pg_xlogfile_name);
@@ -174,6 +178,7 @@ Datum pg_cached_plan_source(PG_FUNCTION_ARGS);
 Datum pg_signal_process(PG_FUNCTION_ARGS);
 Datum pg_get_priority(PG_FUNCTION_ARGS);
 Datum pg_set_priority(PG_FUNCTION_ARGS);
+Datum pg_segmentation_fault(PG_FUNCTION_ARGS);
 Datum pg_process_config_file(PG_FUNCTION_ARGS);
 Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
@@ -226,6 +231,7 @@ static const char *SyncRepGetWaitModeString(int mode);
 #endif
 static int GetProcessPriority(int pid, int elevel);
 static void SetProcessPriority(int pid, int priority, int elevel);
+static void ExitOnSegvHandler(SIGNAL_ARGS);
 static void CheckPostgresPid(int pid);
 static bool IsWalSenderPid(int pid);
 static bool IsWalReceiverPid(int pid);
@@ -236,6 +242,7 @@ static text *Bits8GetText(bits8 b1, bits8 b2, bits8 c3, int len);
 
 static void assign_scheduling_priority(int newval, void *extra);
 static const char *show_scheduling_priority(void);
+static void assign_exit_on_segv(bool newval, void *extra);
 
 /*
  * Module load callback
@@ -304,6 +311,17 @@ _PG_init(void)
 							NULL,
 							assign_scheduling_priority,
 							show_scheduling_priority);
+
+	DefineCustomBoolVariable("pg_cheat_funcs.exit_on_segv",
+							 "Terminate session on segmentation fault.",
+							 NULL,
+							 &cheat_exit_on_segv,
+							 false,
+							 PGC_USERSET,
+							 0,
+							 NULL,
+							 assign_exit_on_segv,
+							 NULL);
 
 	EmitWarningsOnPlaceholders("pg_cheat_funcs");
 
@@ -738,6 +756,51 @@ show_scheduling_priority(void)
 
 	snprintf(nbuf, sizeof(nbuf), "%d", GetProcessPriority(getpid(), WARNING));
 	return nbuf;
+}
+
+/*
+ * Cause segmentation fault.
+ *
+ * If treat_fatal_as_error is true, make the SEGV handler report ERROR
+ * instead of FATAL. This is intended for testing.
+ */
+Datum
+pg_segmentation_fault(PG_FUNCTION_ARGS)
+{
+	bool	treat_fatal_as_error = PG_GETARG_BOOL(0);
+	int		*ptr = NULL;
+
+	if (treat_fatal_as_error)
+		ExitOnSegvErrorLevel = ERROR;
+
+	PG_TRY();
+	{
+		*ptr = 10;
+	}
+	PG_FINALLY();
+	{
+		ExitOnSegvErrorLevel = FATAL;
+	}
+	PG_END_TRY();
+
+	PG_RETURN_VOID();
+}
+
+static void
+ExitOnSegvHandler(SIGNAL_ARGS)
+{
+	ereport(ExitOnSegvErrorLevel,
+			(errcode(ERRCODE_INTERNAL_ERROR),
+			 errmsg("terminating PostgreSQL server process due to segmentation fault")));
+}
+
+static void
+assign_exit_on_segv(bool newval, void *extra)
+{
+	if (newval)
+		pqsignal(SIGSEGV, ExitOnSegvHandler);
+	else
+		pqsignal(SIGSEGV, SIG_DFL);
 }
 
 /*

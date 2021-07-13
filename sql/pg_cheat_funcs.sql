@@ -54,4 +54,8 @@ SELECT classid, objid, objsubid, mode FROM pg_locks WHERE locktype = 'advisory' 
 COMMIT;
 SELECT classid, objid, objsubid, mode FROM pg_locks WHERE locktype = 'advisory' ORDER BY classid, objid, objsubid, mode;
 
+SET pg_cheat_funcs.exit_on_segv TO on;
+SELECT pg_segmentation_fault(true);
+SET pg_cheat_funcs.exit_on_segv TO off;
+
 DROP EXTENSION pg_cheat_funcs;

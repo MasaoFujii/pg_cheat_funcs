@@ -78,6 +78,12 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_set_priority(integer, integer) FROM PUBLIC;
 
+CREATE FUNCTION pg_segmentation_fault(boolean DEFAULT false)
+RETURNS void
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT VOLATILE;
+REVOKE ALL ON FUNCTION pg_segmentation_fault(boolean) FROM PUBLIC;
+
 CREATE FUNCTION pg_process_config_file()
 RETURNS void
 AS 'MODULE_PATHNAME'
