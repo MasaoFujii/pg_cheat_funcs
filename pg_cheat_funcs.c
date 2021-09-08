@@ -1288,9 +1288,9 @@ pg_checkpoint(PG_FUNCTION_ARGS)
 	bool	wait = PG_GETARG_BOOL(1);
 	bool	force = PG_GETARG_BOOL(2);
 
-	RequestCheckpoint(fast ? CHECKPOINT_IMMEDIATE : 0 |
-					  wait ? CHECKPOINT_WAIT : 0 |
-					  force ? CHECKPOINT_FORCE : 0);
+	RequestCheckpoint((fast ? CHECKPOINT_IMMEDIATE : 0) |
+					  (wait ? CHECKPOINT_WAIT : 0) |
+					  (force ? CHECKPOINT_FORCE : 0));
 
 	PG_RETURN_VOID();
 }
