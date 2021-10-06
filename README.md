@@ -231,6 +231,17 @@ This function returns a record, shown in the table below.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### void pg_refresh_snapshot()
+Forcibly refresh the current snapshot whatever transaction isolation
+level is used.
+
+Note that this is extremely dangerous function and can easily break
+transaction isolation.
+This function must not be used for a purpose other than debug.
+
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### integer pg_advance_vacuum_cleanup_age(integer)
 Specify the number of transactions by which VACUUM and HOT updates
 will advance cleanup of dead row versions.
