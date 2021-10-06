@@ -136,12 +136,12 @@ PG_FUNCTION_INFO_V1(pg_lsn_smaller);
 #endif
 PG_FUNCTION_INFO_V1(pg_stat_get_syncrep_waiters);
 PG_FUNCTION_INFO_V1(pg_wait_syncrep);
+PG_FUNCTION_INFO_V1(pg_refresh_snapshot);
 #endif
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
 PG_FUNCTION_INFO_V1(pg_set_next_oid);
 PG_FUNCTION_INFO_V1(pg_oid_assignment);
-PG_FUNCTION_INFO_V1(pg_refresh_snapshot);
 PG_FUNCTION_INFO_V1(pg_advance_vacuum_cleanup_age);
 PG_FUNCTION_INFO_V1(pg_checkpoint);
 #if PG_VERSION_NUM < 120000
@@ -190,7 +190,6 @@ Datum pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum pg_xid_assignment(PG_FUNCTION_ARGS);
 Datum pg_set_next_oid(PG_FUNCTION_ARGS);
 Datum pg_oid_assignment(PG_FUNCTION_ARGS);
-Datum pg_refresh_snapshot(PG_FUNCTION_ARGS);
 Datum pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS);
 Datum pg_checkpoint(PG_FUNCTION_ARGS);
 #if PG_VERSION_NUM < 120000
@@ -1043,6 +1042,30 @@ pg_wait_syncrep(PG_FUNCTION_ARGS)
 
 	PG_RETURN_VOID();
 }
+
+/*
+ * Forcibly refresh the current snapshot.
+ */
+Datum
+pg_refresh_snapshot(PG_FUNCTION_ARGS)
+{
+	int		save_XactIsoLevel;
+	bool	XactIsoLevelNeedsReset = false;
+
+	if (FirstSnapshotSet && IsolationUsesXactSnapshot())
+	{
+		save_XactIsoLevel = XactIsoLevel;
+		XactIsoLevel = XACT_READ_COMMITTED;
+		XactIsoLevelNeedsReset = true;
+	}
+
+	GetTransactionSnapshot();
+
+	if (XactIsoLevelNeedsReset)
+		XactIsoLevel = save_XactIsoLevel;
+
+	PG_RETURN_VOID();
+}
 #endif	/* PG_VERSION_NUM >= 90400 */
 
 /*
@@ -1251,30 +1274,6 @@ pg_oid_assignment(PG_FUNCTION_ARGS)
 	/* Returns the record as Datum */
 	PG_RETURN_DATUM(HeapTupleGetDatum(
 						heap_form_tuple(tupdesc, values, nulls)));
-}
-
-/*
- * Forcibly refresh the current snapshot.
- */
-Datum
-pg_refresh_snapshot(PG_FUNCTION_ARGS)
-{
-	int		save_XactIsoLevel;
-	bool	XactIsoLevelNeedsReset = false;
-
-	if (FirstSnapshotSet && IsolationUsesXactSnapshot())
-	{
-		save_XactIsoLevel = XactIsoLevel;
-		XactIsoLevel = XACT_READ_COMMITTED;
-		XactIsoLevelNeedsReset = true;
-	}
-
-	GetTransactionSnapshot();
-
-	if (XactIsoLevelNeedsReset)
-		XactIsoLevel = save_XactIsoLevel;
-
-	PG_RETURN_VOID();
 }
 
 /*

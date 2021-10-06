@@ -167,6 +167,22 @@ BEGIN
 END;
 $$;
 
+/* pg_refresh_snapshot function is available only in 9.4 or later */
+DO $$
+DECLARE
+    pgversion INTEGER;
+BEGIN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 90400 THEN
+        CREATE FUNCTION pg_refresh_snapshot()
+        RETURNS void
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT VOLATILE;
+        REVOKE ALL ON FUNCTION pg_refresh_snapshot() FROM PUBLIC;
+    END IF;
+END;
+$$;
+
 CREATE FUNCTION pg_set_next_xid(xid)
 RETURNS xid
 AS 'MODULE_PATHNAME'
@@ -195,12 +211,6 @@ CREATE FUNCTION pg_oid_assignment(OUT next_oid oid,
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_oid_assignment() FROM PUBLIC;
-
-CREATE FUNCTION pg_refresh_snapshot()
-RETURNS void
-AS 'MODULE_PATHNAME'
-LANGUAGE C CALLED ON NULL INPUT VOLATILE;
-REVOKE ALL ON FUNCTION pg_refresh_snapshot() FROM PUBLIC;
 
 CREATE FUNCTION pg_advance_vacuum_cleanup_age(integer DEFAULT NULL)
 RETURNS integer

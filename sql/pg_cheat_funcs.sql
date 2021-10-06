@@ -13,12 +13,6 @@ SELECT pg_eucjp('xa4', 'xa2');
 
 SELECT pg_set_next_xid(next_xid) = next_xid FROM pg_xid_assignment();
 
-BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-SELECT pg_refresh_snapshot();
-SELECT 1;
-SELECT pg_refresh_snapshot();
-COMMIT;
-
 DO $$
 DECLARE
   orig_cleanup_age text := current_setting('vacuum_defer_cleanup_age');

@@ -9,4 +9,10 @@ SELECT min(lsn), max(lsn) FROM test_lsn;
 SELECT pg_file_fsync('global');
 SELECT pg_file_fsync('global/pg_control');
 
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SELECT pg_refresh_snapshot();
+SELECT 1;
+SELECT pg_refresh_snapshot();
+COMMIT;
+
 DROP EXTENSION pg_cheat_funcs;

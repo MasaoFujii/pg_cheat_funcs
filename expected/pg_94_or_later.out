@@ -20,4 +20,24 @@ SELECT pg_file_fsync('global/pg_control');
  
 (1 row)
 
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SELECT pg_refresh_snapshot();
+ pg_refresh_snapshot 
+---------------------
+ 
+(1 row)
+
+SELECT 1;
+ ?column? 
+----------
+        1
+(1 row)
+
+SELECT pg_refresh_snapshot();
+ pg_refresh_snapshot 
+---------------------
+ 
+(1 row)
+
+COMMIT;
 DROP EXTENSION pg_cheat_funcs;

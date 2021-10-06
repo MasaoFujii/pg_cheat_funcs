@@ -186,6 +186,18 @@ This function is available only in PostgreSQL 9.4 or later.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### void pg_refresh_snapshot()
+Forcibly refresh the current snapshot whatever transaction isolation
+level is used.
+
+Note that this is extremely dangerous function and can easily break
+transaction isolation.
+This function must not be used for a purpose other than debug.
+
+This function is available only in PostgreSQL 9.4 or later.
+This function is restricted to superusers by default,
+but other users can be granted EXECUTE to run the function.
+
 ### xid pg_set_next_xid(transactionid xid)
 Set and return the next transaction ID.
 Note that this function doesn't check if it's safe to assign
@@ -227,17 +239,6 @@ This function returns a record, shown in the table below.
 |-------------|-----------|----------------------------------------|
 | next_oid    | oid       | next object ID to assign               |
 | oid_count   | integer   | OIDs available before must do WAL work |
-
-This function is restricted to superusers by default,
-but other users can be granted EXECUTE to run the function.
-
-### void pg_refresh_snapshot()
-Forcibly refresh the current snapshot whatever transaction isolation
-level is used.
-
-Note that this is extremely dangerous function and can easily break
-transaction isolation.
-This function must not be used for a purpose other than debug.
 
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
