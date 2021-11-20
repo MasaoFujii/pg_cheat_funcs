@@ -132,10 +132,11 @@ but other users can be granted EXECUTE to run the function.
 
 ### text pg_xlogfile_name(location pg_lsn, recovery boolean)
 Convert transaction log location string to file name.
-This function is almost the same as pg_xlogfile_name() which PostgreSQL core provides.
+This function is almost the same as pg_walfile_name()
+(or pg_xlogfile_name in 9.6 or before) which PostgreSQL core provides.
 The difference of them is whether there is a second parameter of type boolean.
 If false, this function always fails with an error during recovery.
-This is the same behavior as the core version of pg_xlogfile_name().
+This is the same behavior as the core version of pg_walfile_name().
 If true, this function can be executed even during recovery.
 But note that the first 8 digits of returned WAL filename
 (which represents the timeline ID) can be completely incorrect.

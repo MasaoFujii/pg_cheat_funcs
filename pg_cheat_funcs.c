@@ -902,12 +902,23 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
 	XLogRecPtr	locationpoint = PG_GETARG_LSN(0);
 	char		xlogfilename[MAXFNAMELEN];
 	bool		recovery = PG_GETARG_BOOL(1);
+#if PG_VERSION_NUM >= 150000
+	TimeLineID	ThisTimeLineID = 0;
+#endif
 
 	if (!recovery && RecoveryInProgress())
 		ereport(ERROR,
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 				 errmsg("recovery is in progress"),
 		 errhint("pg_xlogfile_name() cannot be executed during recovery.")));
+
+#if PG_VERSION_NUM >= 150000
+	/* Use the currently-replaying timeline while in recovery */
+	if (RecoveryInProgress())
+		(void) GetXLogReplayRecPtr(&ThisTimeLineID);
+	else
+		ThisTimeLineID = GetWALInsertionTimeLine();
+#endif
 
 #if PG_VERSION_NUM >= 110000
 	XLByteToPrevSeg(locationpoint, xlogsegno, wal_segment_size);
