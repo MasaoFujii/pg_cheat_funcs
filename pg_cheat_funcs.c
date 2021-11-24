@@ -68,12 +68,12 @@
 PG_MODULE_MAGIC;
 
 /* GUC variables */
-static bool	cheat_log_memory_context = false;
-static bool	cheat_hide_appname = false;
-static char	*cheat_hidden_appname = NULL;
-static bool	cheat_log_session_start_options = false;
-static int		cheat_scheduling_priority = 0;
-static bool	cheat_exit_on_segv = false;
+static bool cheat_log_memory_context = false;
+static bool cheat_hide_appname = false;
+static char *cheat_hidden_appname = NULL;
+static bool cheat_log_session_start_options = false;
+static int	cheat_scheduling_priority = 0;
+static bool cheat_exit_on_segv = false;
 
 /* Saved hook values in case of unload */
 static ExecutorEnd_hook_type prev_ExecutorEnd = NULL;
@@ -87,7 +87,7 @@ typedef struct pglz_header
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int32		rawsize;
-} pglz_header;
+}			pglz_header;
 
 #define PGLZ_HDRSZ		((int32) sizeof(pglz_header))
 #define PGLZ_RAWSIZE(ptr) (((pglz_header *) (ptr))->rawsize & 0x3FFFFFFF)
@@ -106,7 +106,7 @@ PG_FUNCTION_INFO_V1(pglz_decompress_bytea);
 
 static struct varlena *PGLZCompress(struct varlena *source);
 static struct varlena *PGLZDecompress(struct varlena *source);
-#endif	/* PG_VERSION_NUM >= 90500 */
+#endif							/* PG_VERSION_NUM >= 90500 */
 
 /*
  * pg_stat_get_memory_context function is available only in
@@ -116,9 +116,9 @@ static struct varlena *PGLZDecompress(struct varlena *source);
 #if PG_VERSION_NUM < 140000
 #if PG_VERSION_NUM >= 90600
 PG_FUNCTION_INFO_V1(pg_stat_get_memory_context);
-#endif	/* PG_VERSION_ NUM >= 90600 */
+#endif							/* PG_VERSION_ NUM >= 90600 */
 PG_FUNCTION_INFO_V1(pg_stat_print_memory_context);
-#endif	/* PG_VERSION_NUM < 140000 */
+#endif							/* PG_VERSION_NUM < 140000 */
 
 #if PG_VERSION_NUM >= 90200
 PG_FUNCTION_INFO_V1(pg_cached_plan_source);
@@ -155,7 +155,7 @@ PG_FUNCTION_INFO_V1(pg_tablespace_version_directory);
 PG_FUNCTION_INFO_V1(pg_file_write_binary);
 #if PG_VERSION_NUM >= 90400
 PG_FUNCTION_INFO_V1(pg_file_fsync);
-#endif /* PG_VERSION_NUM >= 90400 */
+#endif							/* PG_VERSION_NUM >= 90400 */
 PG_FUNCTION_INFO_V1(to_octal32);
 PG_FUNCTION_INFO_V1(to_octal64);
 PG_FUNCTION_INFO_V1(pg_text_to_hex);
@@ -177,41 +177,41 @@ PG_FUNCTION_INFO_V1(pg_advisory_xact_unlock_shared_int4);
  * here is necessary only for 9.3 or before.
  */
 #if PG_VERSION_NUM < 90400
-Datum pg_stat_print_memory_context(PG_FUNCTION_ARGS);
+Datum		pg_stat_print_memory_context(PG_FUNCTION_ARGS);
 #if PG_VERSION_NUM >= 90200
-Datum pg_cached_plan_source(PG_FUNCTION_ARGS);
+Datum		pg_cached_plan_source(PG_FUNCTION_ARGS);
 #endif
-Datum pg_signal_process(PG_FUNCTION_ARGS);
-Datum pg_get_priority(PG_FUNCTION_ARGS);
-Datum pg_set_priority(PG_FUNCTION_ARGS);
-Datum pg_segmentation_fault(PG_FUNCTION_ARGS);
-Datum pg_process_config_file(PG_FUNCTION_ARGS);
-Datum pg_set_next_xid(PG_FUNCTION_ARGS);
-Datum pg_xid_assignment(PG_FUNCTION_ARGS);
-Datum pg_set_next_oid(PG_FUNCTION_ARGS);
-Datum pg_oid_assignment(PG_FUNCTION_ARGS);
-Datum pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS);
-Datum pg_checkpoint(PG_FUNCTION_ARGS);
+Datum		pg_signal_process(PG_FUNCTION_ARGS);
+Datum		pg_get_priority(PG_FUNCTION_ARGS);
+Datum		pg_set_priority(PG_FUNCTION_ARGS);
+Datum		pg_segmentation_fault(PG_FUNCTION_ARGS);
+Datum		pg_process_config_file(PG_FUNCTION_ARGS);
+Datum		pg_set_next_xid(PG_FUNCTION_ARGS);
+Datum		pg_xid_assignment(PG_FUNCTION_ARGS);
+Datum		pg_set_next_oid(PG_FUNCTION_ARGS);
+Datum		pg_oid_assignment(PG_FUNCTION_ARGS);
+Datum		pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS);
+Datum		pg_checkpoint(PG_FUNCTION_ARGS);
 #if PG_VERSION_NUM < 120000
-Datum pg_promote(PG_FUNCTION_ARGS);
+Datum		pg_promote(PG_FUNCTION_ARGS);
 #endif
-Datum pg_recovery_settings(PG_FUNCTION_ARGS);
-Datum pg_show_primary_conninfo(PG_FUNCTION_ARGS);
-Datum pg_postmaster_pid(PG_FUNCTION_ARGS);
-Datum pg_backend_start_time(PG_FUNCTION_ARGS);
-Datum pg_tablespace_version_directory(PG_FUNCTION_ARGS);
-Datum pg_file_write_binary(PG_FUNCTION_ARGS);
-Datum to_octal32(PG_FUNCTION_ARGS);
-Datum to_octal64(PG_FUNCTION_ARGS);
-Datum pg_text_to_hex(PG_FUNCTION_ARGS);
-Datum pg_hex_to_text(PG_FUNCTION_ARGS);
-Datum pg_chr(PG_FUNCTION_ARGS);
-Datum pg_eucjp(PG_FUNCTION_ARGS);
-Datum pg_euc_jp_to_utf8(PG_FUNCTION_ARGS);
-Datum pg_advisory_xact_unlock_int8(PG_FUNCTION_ARGS);
-Datum pg_advisory_xact_unlock_shared_int8(PG_FUNCTION_ARGS);
-Datum pg_advisory_xact_unlock_int4(PG_FUNCTION_ARGS);
-Datum pg_advisory_xact_unlock_shared_int4(PG_FUNCTION_ARGS);
+Datum		pg_recovery_settings(PG_FUNCTION_ARGS);
+Datum		pg_show_primary_conninfo(PG_FUNCTION_ARGS);
+Datum		pg_postmaster_pid(PG_FUNCTION_ARGS);
+Datum		pg_backend_start_time(PG_FUNCTION_ARGS);
+Datum		pg_tablespace_version_directory(PG_FUNCTION_ARGS);
+Datum		pg_file_write_binary(PG_FUNCTION_ARGS);
+Datum		to_octal32(PG_FUNCTION_ARGS);
+Datum		to_octal64(PG_FUNCTION_ARGS);
+Datum		pg_text_to_hex(PG_FUNCTION_ARGS);
+Datum		pg_hex_to_text(PG_FUNCTION_ARGS);
+Datum		pg_chr(PG_FUNCTION_ARGS);
+Datum		pg_eucjp(PG_FUNCTION_ARGS);
+Datum		pg_euc_jp_to_utf8(PG_FUNCTION_ARGS);
+Datum		pg_advisory_xact_unlock_int8(PG_FUNCTION_ARGS);
+Datum		pg_advisory_xact_unlock_shared_int8(PG_FUNCTION_ARGS);
+Datum		pg_advisory_xact_unlock_int4(PG_FUNCTION_ARGS);
+Datum		pg_advisory_xact_unlock_shared_int4(PG_FUNCTION_ARGS);
 #endif
 
 void		_PG_init(void);
@@ -222,20 +222,19 @@ static void CheatClientAuthentication(Port *port, int status);
 
 #if PG_VERSION_NUM < 140000
 #if PG_VERSION_NUM >= 90600
-static void
-PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
-								TupleDesc tupdesc, MemoryContext context,
-								MemoryContext parent, int level);
-#endif	/* PG_VERSION_NUM >= 90600 */
+static void PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
+											TupleDesc tupdesc, MemoryContext context,
+											MemoryContext parent, int level);
+#endif							/* PG_VERSION_NUM >= 90600 */
 static void PrintMemoryContextStats(MemoryContext context, int level);
-#endif	/* PG_VERSION_NUM < 140000 */
+#endif							/* PG_VERSION_NUM < 140000 */
 
-static int GetSignalByName(char *signame);
+static int	GetSignalByName(char *signame);
 static ReturnSetInfo *InitReturnSetFunc(FunctionCallInfo fcinfo);
 #if PG_VERSION_NUM >= 90400
 static const char *SyncRepGetWaitModeString(int mode);
 #endif
-static int GetProcessPriority(int pid, int elevel);
+static int	GetProcessPriority(int pid, int elevel);
 static void SetProcessPriority(int pid, int priority, int elevel);
 static void ExitOnSegvHandler(SIGNAL_ARGS);
 static void CheckPostgresPid(int pid);
@@ -387,14 +386,14 @@ CheatClientAuthentication(Port *port, int status)
 	/* Hide client's application_name from view */
 	if (cheat_hide_appname)
 	{
-		List			*gucopts = port->guc_options;
-		ListCell	*cell;
-		ListCell	*next;
+		List	   *gucopts = port->guc_options;
+		ListCell   *cell;
+		ListCell   *next;
 
 		for (cell = list_head(gucopts); cell != NULL; cell = next)
 		{
 			char	   *name = lfirst(cell);
-			char		*value;
+			char	   *value;
 
 			next = CHEAT_LNEXT(port->guc_options, cell);
 
@@ -417,6 +416,7 @@ CheatClientAuthentication(Port *port, int status)
 	if (cheat_log_session_start_options)
 	{
 		ListCell   *cell = list_head(port->guc_options);
+
 		while (cell)
 		{
 			char	   *name;
@@ -440,11 +440,11 @@ CheatClientAuthentication(Port *port, int status)
 static ReturnSetInfo *
 InitReturnSetFunc(FunctionCallInfo fcinfo)
 {
-	ReturnSetInfo	*rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
+	ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
 	TupleDesc	tupdesc;
 	Tuplestorestate *tupstore;
-	MemoryContext	per_query_ctx;
-	MemoryContext	oldcontext;
+	MemoryContext per_query_ctx;
+	MemoryContext oldcontext;
 
 	/* check to see if caller supports us returning a tuplestore */
 	if (rsinfo == NULL || !IsA(rsinfo, ReturnSetInfo))
@@ -541,7 +541,7 @@ PutMemoryContextStatsTupleStore(Tuplestorestate *tupstore,
 										child, context, level + 1);
 	}
 }
-#endif	/* PG_VERSION_NUM >= 90600 */
+#endif							/* PG_VERSION_NUM >= 90600 */
 
 /*
  * Print statistics about TopMemoryContext and all its descendants.
@@ -560,7 +560,7 @@ pg_stat_print_memory_context(PG_FUNCTION_ARGS)
  */
 static void
 SimpleMemoryContextStatsPrint(MemoryContext context, void *passthru,
-						const char *stats_string)
+							  const char *stats_string)
 {
 	int			level = *(int *) passthru;
 	const char *name = context->name;
@@ -570,7 +570,7 @@ SimpleMemoryContextStatsPrint(MemoryContext context, void *passthru,
 		fprintf(stderr, "  ");
 	fprintf(stderr, "%s: %s\n", name, stats_string);
 }
-#endif	/* PG_VERSION_NUM >= 110000 */
+#endif							/* PG_VERSION_NUM >= 110000 */
 
 /*
  * Print statistics about the named context and all its descendants.
@@ -595,7 +595,7 @@ PrintMemoryContextStats(MemoryContext context, int level)
 	for (child = context->firstchild; child != NULL; child = child->nextchild)
 		PrintMemoryContextStats(child, level + 1);
 }
-#endif	/* PG_VERSION_NUM < 140000 */
+#endif							/* PG_VERSION_NUM < 140000 */
 
 #if PG_VERSION_NUM >= 90200
 /*
@@ -605,12 +605,12 @@ PrintMemoryContextStats(MemoryContext context, int level)
 Datum
 pg_cached_plan_source(PG_FUNCTION_ARGS)
 {
-	char	*stmt_name = text_to_cstring(PG_GETARG_TEXT_P(0));
+	char	   *stmt_name = text_to_cstring(PG_GETARG_TEXT_P(0));
 	TupleDesc	tupdesc;
-	Datum			values[5];
-	bool				nulls[5];
-	PreparedStatement	*stmt;
-	CachedPlanSource	*plansource;
+	Datum		values[5];
+	bool		nulls[5];
+	PreparedStatement *stmt;
+	CachedPlanSource *plansource;
 
 	/* Look it up in the hash table */
 	stmt = FetchPreparedStatement(stmt_name, true);
@@ -652,7 +652,7 @@ pg_cached_plan_source(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(HeapTupleGetDatum(
 									  heap_form_tuple(tupdesc, values, nulls)));
 }
-#endif	/* PG_VERSION_NUM >= 90200 */
+#endif							/* PG_VERSION_NUM >= 90200 */
 
 /*
  * Send a signal to PostgreSQL server process.
@@ -660,9 +660,9 @@ pg_cached_plan_source(PG_FUNCTION_ARGS)
 Datum
 pg_signal_process(PG_FUNCTION_ARGS)
 {
-	int		pid = PG_GETARG_INT32(0);
-	char	*signame = text_to_cstring(PG_GETARG_TEXT_P(1));
-	int		sig = GetSignalByName(signame);
+	int			pid = PG_GETARG_INT32(0);
+	char	   *signame = text_to_cstring(PG_GETARG_TEXT_P(1));
+	int			sig = GetSignalByName(signame);
 
 	CheckPostgresPid(pid);
 	if (kill(pid, sig))
@@ -692,8 +692,8 @@ CheckPostgresPid(int pid)
 Datum
 pg_get_priority(PG_FUNCTION_ARGS)
 {
-	int		pid = PG_GETARG_INT32(0);
-	int		priority;
+	int			pid = PG_GETARG_INT32(0);
+	int			priority;
 
 	CheckPostgresPid(pid);
 	priority = GetProcessPriority(pid, ERROR);
@@ -706,8 +706,8 @@ pg_get_priority(PG_FUNCTION_ARGS)
 static int
 GetProcessPriority(int pid, int elevel)
 {
-	int	priority = 0;
-	int	save_errno = errno;
+	int			priority = 0;
+	int			save_errno = errno;
 
 	errno = 0;
 	priority = getpriority(PRIO_PROCESS, pid);
@@ -725,8 +725,8 @@ GetProcessPriority(int pid, int elevel)
 Datum
 pg_set_priority(PG_FUNCTION_ARGS)
 {
-	int		pid = PG_GETARG_INT32(0);
-	int		priority = PG_GETARG_INT32(1);
+	int			pid = PG_GETARG_INT32(0);
+	int			priority = PG_GETARG_INT32(1);
 
 	CheckPostgresPid(pid);
 	SetProcessPriority(pid, priority, ERROR);
@@ -739,7 +739,7 @@ pg_set_priority(PG_FUNCTION_ARGS)
 static void
 SetProcessPriority(int pid, int priority, int elevel)
 {
-	int	save_errno = errno;
+	int			save_errno = errno;
 
 	if (setpriority(PRIO_PROCESS, pid, priority) != 0)
 		ereport(elevel,
@@ -773,8 +773,8 @@ show_scheduling_priority(void)
 Datum
 pg_segmentation_fault(PG_FUNCTION_ARGS)
 {
-	bool	treat_fatal_as_error = PG_GETARG_BOOL(0);
-	int		*ptr = NULL;
+	bool		treat_fatal_as_error = PG_GETARG_BOOL(0);
+	int		   *ptr = NULL;
 
 	if (treat_fatal_as_error)
 		ExitOnSegvErrorLevel = ERROR;
@@ -842,7 +842,7 @@ GetSignalByName(char *signame)
 				 (errmsg("unrecognized signal name \"%s\"", signame),
 				  errhint("Valid signal names are \"HUP\", \"INT\", \"QUIT\", \"ABRT\", \"KILL\", \"TERM\", \"USR1\", \"USR2\", \"CONT\", and \"STOP\"."))));
 
-	return 0;	/* keep compiler quiet */
+	return 0;					/* keep compiler quiet */
 }
 
 /*
@@ -851,14 +851,14 @@ GetSignalByName(char *signame)
 static bool
 IsWalSenderPid(int pid)
 {
-	int	i;
+	int			i;
 
 	if (pid == 0)
 		return false;
 
 	for (i = 0; i < max_wal_senders; i++)
 	{
-		WalSnd *walsnd = &WalSndCtl->walsnds[i];
+		WalSnd	   *walsnd = &WalSndCtl->walsnds[i];
 
 		if (walsnd->pid == pid)
 			return true;
@@ -910,7 +910,7 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 				 errmsg("recovery is in progress"),
-		 errhint("pg_xlogfile_name() cannot be executed during recovery.")));
+				 errhint("pg_xlogfile_name() cannot be executed during recovery.")));
 
 #if PG_VERSION_NUM >= 150000
 	/* Use the currently-replaying timeline while in recovery */
@@ -965,7 +965,7 @@ pg_lsn_smaller(PG_FUNCTION_ARGS)
 
 	PG_RETURN_LSN(result);
 }
-#endif	/* PG_VERSION_NUM < 130000 */
+#endif							/* PG_VERSION_NUM < 130000 */
 
 /*
  * Return statistics about all syncrep waiters.
@@ -974,10 +974,10 @@ Datum
 pg_stat_get_syncrep_waiters(PG_FUNCTION_ARGS)
 {
 #define PG_STAT_GET_SYNCREP_WAITERS_COLS	3
-	ReturnSetInfo	*rsinfo;
+	ReturnSetInfo *rsinfo;
 	TupleDesc	tupdesc;
 	Tuplestorestate *tupstore;
-	int		i;
+	int			i;
 
 	rsinfo = InitReturnSetFunc(fcinfo);
 	tupdesc = rsinfo->setDesc;
@@ -993,8 +993,8 @@ pg_stat_get_syncrep_waiters(PG_FUNCTION_ARGS)
 									   offsetof(PGPROC, syncRepLinks));
 		while (proc)
 		{
-			Datum	values[PG_STAT_GET_SYNCREP_WAITERS_COLS];
-			bool	nulls[PG_STAT_GET_SYNCREP_WAITERS_COLS];
+			Datum		values[PG_STAT_GET_SYNCREP_WAITERS_COLS];
+			bool		nulls[PG_STAT_GET_SYNCREP_WAITERS_COLS];
 
 			memset(nulls, 0, sizeof(nulls));
 			values[0] = Int32GetDatum(proc->pid);
@@ -1060,8 +1060,8 @@ pg_wait_syncrep(PG_FUNCTION_ARGS)
 Datum
 pg_refresh_snapshot(PG_FUNCTION_ARGS)
 {
-	int		save_XactIsoLevel;
-	bool	XactIsoLevelNeedsReset = false;
+	int			save_XactIsoLevel;
+	bool		XactIsoLevelNeedsReset = false;
 
 	if (FirstSnapshotSet && IsolationUsesXactSnapshot())
 	{
@@ -1077,7 +1077,7 @@ pg_refresh_snapshot(PG_FUNCTION_ARGS)
 
 	PG_RETURN_VOID();
 }
-#endif	/* PG_VERSION_NUM >= 90400 */
+#endif							/* PG_VERSION_NUM >= 90400 */
 
 /*
  * Set and return the next transaction ID.
@@ -1094,7 +1094,7 @@ pg_set_next_xid(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 				 errmsg("recovery is in progress"),
-		 errhint("pg_set_next_xid() cannot be executed during recovery.")));
+				 errhint("pg_set_next_xid() cannot be executed during recovery.")));
 
 	LWLockAcquire(XidGenLock, LW_EXCLUSIVE);
 #if PG_VERSION_NUM >= 140000
@@ -1111,8 +1111,8 @@ pg_set_next_xid(PG_FUNCTION_ARGS)
 	LWLockRelease(XidGenLock);
 
 	/*
-	 * Make sure that CLOG has room for the given next XID.
-	 * These macros are borrowed from src/backend/access/transam/clog.c.
+	 * Make sure that CLOG has room for the given next XID. These macros are
+	 * borrowed from src/backend/access/transam/clog.c.
 	 */
 #define CLOG_XACTS_PER_BYTE 4
 #define CLOG_XACTS_PER_PAGE (BLCKSZ * CLOG_XACTS_PER_BYTE)
@@ -1122,8 +1122,8 @@ pg_set_next_xid(PG_FUNCTION_ARGS)
 		ExtendCLOG(xid - TransactionIdToPgIndex(xid));
 
 	/*
-	 * Make sure that SUBTRANS has room for the given next XID.
-	 * These macros are borrowed from src/backend/access/transam/subtrans.c.
+	 * Make sure that SUBTRANS has room for the given next XID. These macros
+	 * are borrowed from src/backend/access/transam/subtrans.c.
 	 */
 #define SUBTRANS_XACTS_PER_PAGE (BLCKSZ / sizeof(TransactionId))
 #define TransactionIdToEntry(xid) ((xid) % (TransactionId) SUBTRANS_XACTS_PER_PAGE)
@@ -1212,7 +1212,7 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 
 	/* Returns the record as Datum */
 	PG_RETURN_DATUM(HeapTupleGetDatum(
-						heap_form_tuple(tupdesc, values, nulls)));
+									  heap_form_tuple(tupdesc, values, nulls)));
 }
 
 /*
@@ -1221,14 +1221,14 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 Datum
 pg_set_next_oid(PG_FUNCTION_ARGS)
 {
-	Oid oid = PG_GETARG_OID(0);
-	Oid result;
+	Oid			oid = PG_GETARG_OID(0);
+	Oid			result;
 
 	if (RecoveryInProgress())
 		ereport(ERROR,
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 				 errmsg("recovery is in progress"),
-		 errhint("pg_set_next_oid() cannot be executed during recovery.")));
+				 errhint("pg_set_next_oid() cannot be executed during recovery.")));
 
 #define VAR_OID_PREFETCH		8192
 	LWLockAcquire(OidGenLock, LW_EXCLUSIVE);
@@ -1250,10 +1250,10 @@ pg_oid_assignment(PG_FUNCTION_ARGS)
 {
 #define PG_OID_ASSIGNMENT_COLS	2
 	TupleDesc	tupdesc;
-	Datum	values[PG_OID_ASSIGNMENT_COLS];
-	bool	nulls[PG_OID_ASSIGNMENT_COLS];
-	Oid	nextOid;
-	uint32	oidCount;
+	Datum		values[PG_OID_ASSIGNMENT_COLS];
+	bool		nulls[PG_OID_ASSIGNMENT_COLS];
+	Oid			nextOid;
+	uint32		oidCount;
 
 	/* Initialise values and NULL flags arrays */
 	MemSet(values, 0, sizeof(values));
@@ -1284,7 +1284,7 @@ pg_oid_assignment(PG_FUNCTION_ARGS)
 
 	/* Returns the record as Datum */
 	PG_RETURN_DATUM(HeapTupleGetDatum(
-						heap_form_tuple(tupdesc, values, nulls)));
+									  heap_form_tuple(tupdesc, values, nulls)));
 }
 
 /*
@@ -1294,9 +1294,9 @@ pg_oid_assignment(PG_FUNCTION_ARGS)
 Datum
 pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS)
 {
-	static bool	advanced = false;
-	static int		save_cleanup_age = 0;
-	static int		orig_cleanup_age = 0;
+	static bool advanced = false;
+	static int	save_cleanup_age = 0;
+	static int	orig_cleanup_age = 0;
 
 	if (!advanced || vacuum_defer_cleanup_age != save_cleanup_age)
 		orig_cleanup_age = vacuum_defer_cleanup_age;
@@ -1308,12 +1308,12 @@ pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS)
 	}
 	else
 	{
-		vacuum_defer_cleanup_age = - PG_GETARG_INT32(0);
+		vacuum_defer_cleanup_age = -PG_GETARG_INT32(0);
 		advanced = true;
 	}
 	save_cleanup_age = vacuum_defer_cleanup_age;
 
-	PG_RETURN_INT32(- vacuum_defer_cleanup_age);
+	PG_RETURN_INT32(-vacuum_defer_cleanup_age);
 }
 
 /*
@@ -1322,9 +1322,9 @@ pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS)
 Datum
 pg_checkpoint(PG_FUNCTION_ARGS)
 {
-	bool	fast = PG_GETARG_BOOL(0);
-	bool	wait = PG_GETARG_BOOL(1);
-	bool	force = PG_GETARG_BOOL(2);
+	bool		fast = PG_GETARG_BOOL(0);
+	bool		wait = PG_GETARG_BOOL(1);
+	bool		force = PG_GETARG_BOOL(2);
 
 	RequestCheckpoint((fast ? CHECKPOINT_IMMEDIATE : 0) |
 					  (wait ? CHECKPOINT_WAIT : 0) |
@@ -1345,7 +1345,7 @@ Datum
 pg_promote(PG_FUNCTION_ARGS)
 {
 #if PG_VERSION_NUM >= 90300
-	bool	fast = PG_GETARG_BOOL(0);
+	bool		fast = PG_GETARG_BOOL(0);
 #endif
 
 #define PROMOTE_SIGNAL_FILE		"promote"
@@ -1388,7 +1388,7 @@ CreateEmptyFile(const char *filepath)
 				(errcode_for_file_access(),
 				 errmsg("could not write file \"%s\": %m", filepath)));
 }
-#endif	/* PG_VERSION_NUM < 120000 */
+#endif							/* PG_VERSION_NUM < 120000 */
 
 /*
  * Return a table of all parameter settings in recovery.conf.
@@ -1398,7 +1398,7 @@ pg_recovery_settings(PG_FUNCTION_ARGS)
 {
 #define PG_RECOVERY_SETTINGS_COLS 2
 #define RECOVERY_COMMAND_FILE	"recovery.conf"
-	ReturnSetInfo	*rsinfo;
+	ReturnSetInfo *rsinfo;
 	TupleDesc	tupdesc;
 	Tuplestorestate *tupstore;
 	FILE	   *fd;
@@ -1427,8 +1427,8 @@ pg_recovery_settings(PG_FUNCTION_ARGS)
 
 	for (item = head; item; item = item->next)
 	{
-		Datum	values[PG_RECOVERY_SETTINGS_COLS];
-		bool	nulls[PG_RECOVERY_SETTINGS_COLS];
+		Datum		values[PG_RECOVERY_SETTINGS_COLS];
+		bool		nulls[PG_RECOVERY_SETTINGS_COLS];
 
 		memset(nulls, 0, sizeof(nulls));
 		values[0] = CStringGetTextDatum(item->name);
@@ -1536,7 +1536,7 @@ Datum
 pg_file_fsync(PG_FUNCTION_ARGS)
 {
 	char	   *filename;
-	struct stat	statbuf;
+	struct stat statbuf;
 
 	filename = text_to_cstring(PG_GETARG_TEXT_P(0));
 	canonicalize_path(filename);
@@ -1550,7 +1550,7 @@ pg_file_fsync(PG_FUNCTION_ARGS)
 
 	PG_RETURN_VOID();
 }
-#endif /* PG_VERSION_NUM >= 90400 */
+#endif							/* PG_VERSION_NUM >= 90400 */
 
 #define OCTALBASE 8
 /*
@@ -1560,21 +1560,21 @@ pg_file_fsync(PG_FUNCTION_ARGS)
 Datum
 to_octal32(PG_FUNCTION_ARGS)
 {
-    uint32      value = (uint32) PG_GETARG_INT32(0);
-    char       *ptr;
-    const char *digits = "012345678";
-    char        buf[32];        /* bigger than needed, but reasonable */
+	uint32		value = (uint32) PG_GETARG_INT32(0);
+	char	   *ptr;
+	const char *digits = "012345678";
+	char		buf[32];		/* bigger than needed, but reasonable */
 
-    ptr = buf + sizeof(buf) - 1;
-    *ptr = '\0';
+	ptr = buf + sizeof(buf) - 1;
+	*ptr = '\0';
 
-    do
-    {
-        *--ptr = digits[value % OCTALBASE];
-        value /= OCTALBASE;
-    } while (ptr > buf && value);
+	do
+	{
+		*--ptr = digits[value % OCTALBASE];
+		value /= OCTALBASE;
+	} while (ptr > buf && value);
 
-    PG_RETURN_TEXT_P(cstring_to_text(ptr));
+	PG_RETURN_TEXT_P(cstring_to_text(ptr));
 }
 
 /*
@@ -1584,21 +1584,21 @@ to_octal32(PG_FUNCTION_ARGS)
 Datum
 to_octal64(PG_FUNCTION_ARGS)
 {
-    uint64      value = (uint64) PG_GETARG_INT64(0);
-    char       *ptr;
-    const char *digits = "012345678";
-    char        buf[32];        /* bigger than needed, but reasonable */
+	uint64		value = (uint64) PG_GETARG_INT64(0);
+	char	   *ptr;
+	const char *digits = "012345678";
+	char		buf[32];		/* bigger than needed, but reasonable */
 
-    ptr = buf + sizeof(buf) - 1;
-    *ptr = '\0';
+	ptr = buf + sizeof(buf) - 1;
+	*ptr = '\0';
 
-    do
-    {
-        *--ptr = digits[value % OCTALBASE];
-        value /= OCTALBASE;
-    } while (ptr > buf && value);
+	do
+	{
+		*--ptr = digits[value % OCTALBASE];
+		value /= OCTALBASE;
+	} while (ptr > buf && value);
 
-    PG_RETURN_TEXT_P(cstring_to_text(ptr));
+	PG_RETURN_TEXT_P(cstring_to_text(ptr));
 }
 
 /*
@@ -1607,12 +1607,12 @@ to_octal64(PG_FUNCTION_ARGS)
 Datum
 pg_text_to_hex(PG_FUNCTION_ARGS)
 {
-	text		*s = PG_GETARG_TEXT_P(0);
-	uint8	*sp = (uint8 *) VARDATA(s);
-	int		len = VARSIZE(s) - VARHDRSZ;
-	int		i;
-	char	*result;
-	char	*r;
+	text	   *s = PG_GETARG_TEXT_P(0);
+	uint8	   *sp = (uint8 *) VARDATA(s);
+	int			len = VARSIZE(s) - VARHDRSZ;
+	int			i;
+	char	   *result;
+	char	   *r;
 
 #define HEXDIG(z)	 ((z)<10 ? ((z)+'0') : ((z)-10+'a'))
 
@@ -1634,14 +1634,14 @@ pg_text_to_hex(PG_FUNCTION_ARGS)
 Datum
 pg_hex_to_text(PG_FUNCTION_ARGS)
 {
-	text		*s = PG_GETARG_TEXT_P(0);
-	uint8	*sp = (uint8 *) VARDATA(s);
-	int		len = VARSIZE(s) - VARHDRSZ;
-	int		i;
-	int		bc;
-	char	*result;
-	char	*r;
-	uint8	x;
+	text	   *s = PG_GETARG_TEXT_P(0);
+	uint8	   *sp = (uint8 *) VARDATA(s);
+	int			len = VARSIZE(s) - VARHDRSZ;
+	int			i;
+	int			bc;
+	char	   *result;
+	char	   *r;
+	uint8		x;
 
 	result = (char *) palloc0(len / 2 + 1 + 1);
 	r = result;
@@ -1679,11 +1679,11 @@ pg_hex_to_text(PG_FUNCTION_ARGS)
 Datum
 pg_chr(PG_FUNCTION_ARGS)
 {
-	Datum	res;
+	Datum		res;
 
 	PG_TRY();
 	{
-		res = chr(fcinfo);
+		res = chr	(fcinfo);
 	}
 	PG_CATCH();
 	{
@@ -1701,8 +1701,8 @@ pg_chr(PG_FUNCTION_ARGS)
 static text *
 Bits8GetText(bits8 b1, bits8 b2, bits8 b3, int len)
 {
-	text		*result;
-	bits8	*tmp;
+	text	   *result;
+	bits8	   *tmp;
 
 	result = (text *) palloc(VARHDRSZ + len);
 	SET_VARSIZE(result, VARHDRSZ + len);
@@ -1723,16 +1723,16 @@ Bits8GetText(bits8 b1, bits8 b2, bits8 b3, int len)
 Datum
 pg_eucjp(PG_FUNCTION_ARGS)
 {
-	bits8	b1 = *(VARBITS(PG_GETARG_VARBIT_P(0)));
-	bits8	b2 = *(VARBITS(PG_GETARG_VARBIT_P(1)));
-	bits8	b3 = *(VARBITS(PG_GETARG_VARBIT_P(2)));
-	int		len;
+	bits8		b1 = *(VARBITS(PG_GETARG_VARBIT_P(0)));
+	bits8		b2 = *(VARBITS(PG_GETARG_VARBIT_P(1)));
+	bits8		b3 = *(VARBITS(PG_GETARG_VARBIT_P(2)));
+	int			len;
 
 	if (GetDatabaseEncoding() != PG_EUC_JP)
 		ereport(ERROR,
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 				 errmsg("database encoding is %s", GetDatabaseEncodingName()),
-		 errhint("pg_eucjp() can be executed only under EUC_JP encoding.")));
+				 errhint("pg_eucjp() can be executed only under EUC_JP encoding.")));
 
 #define IS_EUC_RANGE_VALID(b)	((b) >= 0xa1 && (b) <= 0xfe)
 
@@ -1751,14 +1751,14 @@ pg_eucjp(PG_FUNCTION_ARGS)
 			break;
 
 		default:
-			if (IS_HIGHBIT_SET(b1))		/* JIS X 0208? */
+			if (IS_HIGHBIT_SET(b1)) /* JIS X 0208? */
 			{
 				if (!IS_EUC_RANGE_VALID(b1) || !IS_EUC_RANGE_VALID(b2) ||
 					b3 != 0x00)
 					PG_RETURN_NULL();
 				len = 2;
 			}
-			else			/* must be ASCII */
+			else				/* must be ASCII */
 			{
 				if (b2 != 0x00 || b3 != 0x00)
 					PG_RETURN_NULL();
@@ -1791,13 +1791,13 @@ compare_local_to_utf(const void *p1, const void *p2)
 static uint32
 extra_euc_jp_to_utf8(uint32 code)
 {
-	const pg_local_to_utf *p;
+	const		pg_local_to_utf *p;
 
 	p = bsearch(&code, ExtraLUmapEUC_JP, lengthof(ExtraLUmapEUC_JP),
 				sizeof(pg_local_to_utf), compare_local_to_utf);
 	return p ? p->utf : 0;
 }
-#endif		/* PG_VERSION_NUM >= 90500 */
+#endif							/* PG_VERSION_NUM >= 90500 */
 
 /*
  * Convert string from EUC_JP to UTF-8.
@@ -1809,7 +1809,7 @@ pg_euc_jp_to_utf8(PG_FUNCTION_ARGS)
 	unsigned char *dest = (unsigned char *) PG_GETARG_CSTRING(3);
 	int			len = PG_GETARG_INT32(4);
 #if PG_VERSION_NUM >= 140000
-	bool	noError = PG_GETARG_BOOL(5);
+	bool		noError = PG_GETARG_BOOL(5);
 #endif
 
 #if PG_VERSION_NUM < 90500
@@ -1838,16 +1838,17 @@ pg_euc_jp_to_utf8(PG_FUNCTION_ARGS)
 			   extra_euc_jp_to_utf8,
 			   PG_EUC_JP);
 #else
+
 	/*
 	 * The first time through, we create the extra conversion map in
-	 * pg_local_to_utf_combined struct so that LocalToUtf() can use it
-	 * as "secondary" conversion map which is consulted after
-	 * no match is found in ordinary map.
+	 * pg_local_to_utf_combined struct so that LocalToUtf() can use it as
+	 * "secondary" conversion map which is consulted after no match is found
+	 * in ordinary map.
 	 */
 	if (first_time)
 	{
-		int	i;
-		const pg_local_to_utf *p = ExtraLUmapEUC_JP;
+		int			i;
+		const		pg_local_to_utf *p = ExtraLUmapEUC_JP;
 		pg_local_to_utf_combined *cp = cmap;
 
 		for (i = 0; i < lengthof(ExtraLUmapEUC_JP); i++)
@@ -1878,7 +1879,8 @@ pg_euc_jp_to_utf8(PG_FUNCTION_ARGS)
 Datum
 pglz_compress_text(PG_FUNCTION_ARGS)
 {
-	text		*source = PG_GETARG_TEXT_P(0);
+	text	   *source = PG_GETARG_TEXT_P(0);
+
 	PG_RETURN_BYTEA_P(PGLZCompress((struct varlena *) source));
 }
 
@@ -1888,7 +1890,8 @@ pglz_compress_text(PG_FUNCTION_ARGS)
 Datum
 pglz_compress_bytea(PG_FUNCTION_ARGS)
 {
-	bytea	*source = PG_GETARG_BYTEA_P(0);
+	bytea	   *source = PG_GETARG_BYTEA_P(0);
+
 	PG_RETURN_BYTEA_P(PGLZCompress((struct varlena *) source));
 }
 
@@ -1898,9 +1901,9 @@ pglz_compress_bytea(PG_FUNCTION_ARGS)
 static struct varlena *
 PGLZCompress(struct varlena *source)
 {
-	struct varlena	*dest;
-	int32	orig_len = VARSIZE(source) - VARHDRSZ;
-	int32	len;
+	struct varlena *dest;
+	int32		orig_len = VARSIZE(source) - VARHDRSZ;
+	int32		len;
 
 	dest = (struct varlena *) palloc(PGLZ_MAX_OUTPUT(orig_len) + PGLZ_HDRSZ);
 
@@ -1934,7 +1937,8 @@ PGLZCompress(struct varlena *source)
 Datum
 pglz_decompress_text(PG_FUNCTION_ARGS)
 {
-	bytea	*source = PG_GETARG_BYTEA_P(0);
+	bytea	   *source = PG_GETARG_BYTEA_P(0);
+
 	PG_RETURN_TEXT_P(PGLZDecompress((struct varlena *) source));
 }
 
@@ -1944,7 +1948,8 @@ pglz_decompress_text(PG_FUNCTION_ARGS)
 Datum
 pglz_decompress_bytea(PG_FUNCTION_ARGS)
 {
-	bytea	*source = PG_GETARG_BYTEA_P(0);
+	bytea	   *source = PG_GETARG_BYTEA_P(0);
+
 	PG_RETURN_BYTEA_P(PGLZDecompress((struct varlena *) source));
 }
 
@@ -1954,8 +1959,8 @@ pglz_decompress_bytea(PG_FUNCTION_ARGS)
 static struct varlena *
 PGLZDecompress(struct varlena *source)
 {
-	struct varlena	*dest;
-	int32	orig_len = PGLZ_RAWSIZE(source);
+	struct varlena *dest;
+	int32		orig_len = PGLZ_RAWSIZE(source);
 
 	dest = (struct varlena *) palloc(orig_len + VARHDRSZ);
 	SET_VARSIZE(dest, orig_len + VARHDRSZ);
@@ -1981,7 +1986,7 @@ PGLZDecompress(struct varlena *source)
 
 	return dest;
 }
-#endif	/* PG_VERSION_NUM >= 90500 */
+#endif							/* PG_VERSION_NUM >= 90500 */
 
 #if PG_VERSION_NUM >= 100000
 /*
@@ -1990,8 +1995,8 @@ PGLZDecompress(struct varlena *source)
 Datum
 pg_cheat_saslprep(PG_FUNCTION_ARGS)
 {
-	char	*input = text_to_cstring(PG_GETARG_TEXT_P(0));
-	char	*output = NULL;
+	char	   *input = text_to_cstring(PG_GETARG_TEXT_P(0));
+	char	   *output = NULL;
 	pg_saslprep_rc rc;
 
 	rc = pg_saslprep(input, &output);
