@@ -200,6 +200,21 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_xid_assignment() FROM PUBLIC;
 
+/* pg_xid_to_xid8 function is available only in 13 or later */
+DO $$
+DECLARE
+    pgversion INTEGER;
+BEGIN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion >= 130000 THEN
+        CREATE FUNCTION pg_xid_to_xid8(xid)
+        RETURNS xid8
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C STRICT VOLATILE;
+    END IF;
+END;
+$$;
+
 CREATE FUNCTION pg_set_next_oid(oid)
 RETURNS oid
 AS 'MODULE_PATHNAME'

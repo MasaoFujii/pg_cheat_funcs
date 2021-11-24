@@ -64,6 +64,9 @@
 #include "utils/timestamp.h"
 #include "utils/plancache.h"
 #include "utils/varbit.h"
+#if PG_VERSION_NUM >= 130000
+#include "utils/xid8.h"
+#endif
 
 PG_MODULE_MAGIC;
 
@@ -140,6 +143,9 @@ PG_FUNCTION_INFO_V1(pg_refresh_snapshot);
 #endif
 PG_FUNCTION_INFO_V1(pg_set_next_xid);
 PG_FUNCTION_INFO_V1(pg_xid_assignment);
+#if PG_VERSION_NUM >= 130000
+PG_FUNCTION_INFO_V1(pg_xid_to_xid8);
+#endif
 PG_FUNCTION_INFO_V1(pg_set_next_oid);
 PG_FUNCTION_INFO_V1(pg_oid_assignment);
 PG_FUNCTION_INFO_V1(pg_advance_vacuum_cleanup_age);
@@ -1214,6 +1220,40 @@ pg_xid_assignment(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(HeapTupleGetDatum(
 									  heap_form_tuple(tupdesc, values, nulls)));
 }
+
+#if PG_VERSION_NUM >= 130000
+/*
+ * This is copy-pasted from widen_snapshot_xid in PostgreSQL source.
+ */
+static FullTransactionId
+widen_snapshot_xid(TransactionId xid, FullTransactionId next_fxid)
+{
+	TransactionId next_xid = XidFromFullTransactionId(next_fxid);
+	uint32		epoch = EpochFromFullTransactionId(next_fxid);
+
+	if (!TransactionIdIsNormal(xid))
+		return FullTransactionIdFromEpochAndXid(0, xid);
+
+	if (xid > next_xid)
+		epoch--;
+
+	return FullTransactionIdFromEpochAndXid(epoch, xid);
+}
+
+/*
+ * Convert the specified TransactionId (with 32-bit type xid) to
+ * FullTransactionId (with 64-bit type xid8).
+ */
+Datum
+pg_xid_to_xid8(PG_FUNCTION_ARGS)
+{
+	TransactionId xid = PG_GETARG_TRANSACTIONID(0);
+	FullTransactionId fxid;
+
+	fxid = widen_snapshot_xid(xid, ReadNextFullTransactionId());
+	PG_RETURN_FULLTRANSACTIONID(fxid);
+}
+#endif							/* PG_VERSION_NUM >= 130000 */
 
 /*
  * Set and return the next object ID.

@@ -225,6 +225,16 @@ This function returns a record, shown in the table below.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+### xid8 pg_xid_to_xid8 (transactionid xid)
+Convert the specified transaction ID with 32-bit type xid to
+the transaction ID with 64-bit type xid8.
+The specified transaction ID must be from the same epoch as
+the latest transaction ID, or the epoch before.
+For example, the currently used xid like pg_stat_activity.backend_xid
+or pg_locks.transactionid can be specified in this function.
+
+This function is available only in PostgreSQL 13 or later.
+
 ### xid pg_set_next_oid(objectid oid)
 Set and return the next object ID (OID).
 Note that the next OID is set to 16384 (FirstNormalObjectId)
