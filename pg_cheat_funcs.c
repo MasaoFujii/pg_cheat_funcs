@@ -1247,7 +1247,11 @@ widen_snapshot_xid(TransactionId xid, FullTransactionId next_fxid)
 Datum
 pg_xid_to_xid8(PG_FUNCTION_ARGS)
 {
+#if PG_VERSION_NUM >= 140000
 	TransactionId xid = PG_GETARG_TRANSACTIONID(0);
+#else
+	TransactionId xid = PG_GETARG_UINT32(0);
+#endif
 	FullTransactionId fxid;
 
 	fxid = widen_snapshot_xid(xid, ReadNextFullTransactionId());
