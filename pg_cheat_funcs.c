@@ -59,6 +59,9 @@
 #include "storage/proc.h"
 #include "storage/procarray.h"
 #include "utils/builtins.h"
+#if PG_VERSION_NUM >= 160000
+#include "utils/guc.h"
+#endif
 #include "utils/memutils.h"
 #include "utils/snapmgr.h"
 #if PG_VERSION_NUM >= 90400
