@@ -52,6 +52,7 @@ jobs:
     - name: after_script_failure
       if: failure()
       run: |
+        if [ -f regression.diffs ]; then cat regression.diffs; fi
         exit 1
     - name: after_script_success
       if: success()
