@@ -998,6 +998,13 @@ pg_stat_get_syncrep_waiters(PG_FUNCTION_ARGS)
 	LWLockAcquire(SyncRepLock, LW_SHARED);
 	for (i = 0; i < NUM_SYNC_REP_WAIT_MODE; i++)
 	{
+#if PG_VERSION_NUM >= 160000
+		dlist_iter		iter;
+
+		dlist_foreach(iter, &WalSndCtl->SyncRepQueue[i])
+		{
+			PGPROC	   *proc = dlist_container(PGPROC, syncRepLinks, iter.cur);
+#else
 		PGPROC	   *proc = NULL;
 
 		proc = (PGPROC *) SHMQueueNext(&(WalSndCtl->SyncRepQueue[i]),
@@ -1005,6 +1012,7 @@ pg_stat_get_syncrep_waiters(PG_FUNCTION_ARGS)
 									   offsetof(PGPROC, syncRepLinks));
 		while (proc)
 		{
+#endif
 			Datum		values[PG_STAT_GET_SYNCREP_WAITERS_COLS];
 			bool		nulls[PG_STAT_GET_SYNCREP_WAITERS_COLS];
 
@@ -1014,9 +1022,11 @@ pg_stat_get_syncrep_waiters(PG_FUNCTION_ARGS)
 			values[2] = CStringGetTextDatum(SyncRepGetWaitModeString(i));
 			tuplestore_putvalues(tupstore, tupdesc, values, nulls);
 
+#if PG_VERSION_NUM < 160000
 			proc = (PGPROC *) SHMQueueNext(&(WalSndCtl->SyncRepQueue[i]),
 										   &(proc->syncRepLinks),
 										   offsetof(PGPROC, syncRepLinks));
+#endif
 		}
 	}
 	LWLockRelease(SyncRepLock);
