@@ -32,7 +32,7 @@ CREATE TABLE all_eucjp(code1 text, code2 text, code3 text, eucjp text);
 INSERT INTO all_eucjp SELECT * FROM pg_all_eucjp();
 SELECT count(*) FROM all_eucjp
     WHERE pg_eucjp(code1::bit(8), code2::bit(8), code3::bit(8)) <> eucjp;
-SELECT * FROM all_eucjp ORDER BY eucjp;
+SELECT * FROM all_eucjp ORDER BY code1, code2, code3;
 
 SELECT pg_eucjp('xb6', 'xe5') || pg_eucjp('xfc', 'xf9') || pg_eucjp('xad', 'xa9') || pg_eucjp('xfa', 'xdb');
 

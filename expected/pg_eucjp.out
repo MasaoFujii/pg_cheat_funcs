@@ -88,7 +88,7 @@ SELECT count(*) FROM all_eucjp
      0
 (1 row)
 
-SELECT * FROM all_eucjp ORDER BY eucjp;
+SELECT * FROM all_eucjp ORDER BY code1, code2, code3;
  code1 | code2 | code3 |  eucjp   
 -------+-------+-------+----------
  x00   | x00   | x00   | 
