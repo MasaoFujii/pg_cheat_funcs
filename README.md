@@ -277,6 +277,9 @@ This function must not be used for a purpose other than debug.
 This function is restricted to superusers by default,
 but other users can be granted EXECUTE to run the function.
 
+This function is available only in PostgreSQL 15 or earlier,
+as the vacuum_defer_cleanup_age that it depends on was removed in 16.
+
 ### void pg_checkpoint(fast bool, wait bool, force bool)
 Perform a checkpoint.
 If fast is true (default), a checkpoint will finish as soon as possible.

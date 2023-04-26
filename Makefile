@@ -14,6 +14,7 @@ REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 95 ]; then echo pglz_compress; f
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 94 ]; then echo pg_chr pg_94_or_later; else echo pg_chr_91_93; fi)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 92 ]; then echo pg_cached_plan; fi)
 REGRESS += $(shell if [ $(MAJORVERSION_INT) -ge 130 ]; then echo pg_xid_to_xid8; fi)
+REGRESS += $(shell if [ $(MAJORVERSION_INT) -lt 160 ]; then echo pg_advance_vacuum_cleanup_age; fi)
 
 PGFILEDESC = "pg_cheat_funcs - provides cheat (but useful) functions"
 

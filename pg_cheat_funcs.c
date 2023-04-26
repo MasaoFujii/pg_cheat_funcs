@@ -154,7 +154,9 @@ PG_FUNCTION_INFO_V1(pg_xid_to_xid8);
 #endif
 PG_FUNCTION_INFO_V1(pg_set_next_oid);
 PG_FUNCTION_INFO_V1(pg_oid_assignment);
+#if PG_VERSION_NUM < 160000
 PG_FUNCTION_INFO_V1(pg_advance_vacuum_cleanup_age);
+#endif
 PG_FUNCTION_INFO_V1(pg_checkpoint);
 #if PG_VERSION_NUM < 120000
 PG_FUNCTION_INFO_V1(pg_promote);
@@ -202,7 +204,9 @@ Datum		pg_set_next_xid(PG_FUNCTION_ARGS);
 Datum		pg_xid_assignment(PG_FUNCTION_ARGS);
 Datum		pg_set_next_oid(PG_FUNCTION_ARGS);
 Datum		pg_oid_assignment(PG_FUNCTION_ARGS);
+#if PG_VERSION_NUM < 160000
 Datum		pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS);
+#endif
 Datum		pg_checkpoint(PG_FUNCTION_ARGS);
 #if PG_VERSION_NUM < 120000
 Datum		pg_promote(PG_FUNCTION_ARGS);
@@ -1347,6 +1351,7 @@ pg_oid_assignment(PG_FUNCTION_ARGS)
 									  heap_form_tuple(tupdesc, values, nulls)));
 }
 
+#if PG_VERSION_NUM < 160000
 /*
  * Specify the number of transactions by which VACUUM and HOT updates
  * will advance cleanup of dead row versions.
@@ -1375,6 +1380,7 @@ pg_advance_vacuum_cleanup_age(PG_FUNCTION_ARGS)
 
 	PG_RETURN_INT32(-vacuum_defer_cleanup_age);
 }
+#endif							/* PG_VERSION_NUM < 160000 */
 
 /*
  * Perform a checkpoint.

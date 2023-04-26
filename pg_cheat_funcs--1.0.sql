@@ -227,11 +227,23 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT VOLATILE;
 REVOKE ALL ON FUNCTION pg_oid_assignment() FROM PUBLIC;
 
-CREATE FUNCTION pg_advance_vacuum_cleanup_age(integer DEFAULT NULL)
-RETURNS integer
-AS 'MODULE_PATHNAME'
-LANGUAGE C CALLED ON NULL INPUT VOLATILE;
-REVOKE ALL ON FUNCTION pg_advance_vacuum_cleanup_age(integer) FROM PUBLIC;
+-- Create pg_advance_vacuum_cleanup_age() only in 15 or earlier,
+-- as the vacuum_defer_cleanup_age GUC that it depends on was
+-- removed in 16.
+DO $$
+DECLARE
+    pgversion INTEGER;
+BEGIN
+    SELECT current_setting('server_version_num')::INTEGER INTO pgversion;
+    IF pgversion < 160000 THEN
+        CREATE FUNCTION pg_advance_vacuum_cleanup_age(integer DEFAULT NULL)
+        RETURNS integer
+        AS 'MODULE_PATHNAME'
+        LANGUAGE C CALLED ON NULL INPUT VOLATILE;
+        REVOKE ALL ON FUNCTION pg_advance_vacuum_cleanup_age(integer) FROM PUBLIC;
+    END IF;
+END;
+$$;
 
 CREATE FUNCTION pg_checkpoint(bool DEFAULT true, bool DEFAULT true,
     bool DEFAULT true)
