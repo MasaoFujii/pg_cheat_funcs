@@ -4,7 +4,7 @@ This extension provides cheat (but useful) functions on PostgreSQL.
 pg_cheat_funcs is released under the [PostgreSQL License](https://opensource.org/licenses/postgresql), a liberal Open Source license, similar to the BSD or MIT licenses.
 
 ## Test Status
-[![Build Status](https://travis-ci.com/MasaoFujii/pg_cheat_funcs.svg?branch=master)](https://travis-ci.com/github/MasaoFujii/pg_cheat_funcs)
+[![Build Status](https://github.com/MasaoFujii/pg_cheat_funcs/actions/workflows/test.yml/badge.svg)](https://github.com/MasaoFujii/pg_cheat_funcs/actions/workflows/test.yml)
 
 ## Install
 
