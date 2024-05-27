@@ -1000,7 +1000,7 @@ pg_stat_get_syncrep_waiters(PG_FUNCTION_ARGS)
 	for (i = 0; i < NUM_SYNC_REP_WAIT_MODE; i++)
 	{
 #if PG_VERSION_NUM >= 160000
-		dlist_iter		iter;
+		dlist_iter	iter;
 
 		dlist_foreach(iter, &WalSndCtl->SyncRepQueue[i])
 		{
@@ -1105,7 +1105,7 @@ pg_refresh_snapshot(PG_FUNCTION_ARGS)
  */
 #if PG_VERSION_NUM >= 170000
 #define ShmemVariableCache TransamVariables
-#endif	/* PG_VERSION_NUM >= 170000 */
+#endif							/* PG_VERSION_NUM >= 170000 */
 
 /*
  * Set and return the next transaction ID.
