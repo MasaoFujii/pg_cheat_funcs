@@ -509,9 +509,6 @@ pg_stat_get_memory_context(PG_FUNCTION_ARGS)
 	PutMemoryContextStatsTupleStore(tupstore, tupdesc,
 									TopMemoryContext, NULL, 0);
 
-	/* clean up and return the tuplestore */
-	tuplestore_donestoring(tupstore);
-
 	return (Datum) 0;
 }
 
@@ -1035,9 +1032,6 @@ pg_stat_get_syncrep_waiters(PG_FUNCTION_ARGS)
 	}
 	LWLockRelease(SyncRepLock);
 
-	/* clean up and return the tuplestore */
-	tuplestore_donestoring(tupstore);
-
 	return (Datum) 0;
 }
 
@@ -1104,6 +1098,14 @@ pg_refresh_snapshot(PG_FUNCTION_ARGS)
 	PG_RETURN_VOID();
 }
 #endif							/* PG_VERSION_NUM >= 90400 */
+
+/*
+ * ShmemVariableCache was renamed to TransamVariables in v17
+ * (commit b31ba5310b).
+ */
+#if PG_VERSION_NUM >= 170000
+#define ShmemVariableCache TransamVariables
+#endif	/* PG_VERSION_NUM >= 170000 */
 
 /*
  * Set and return the next transaction ID.
@@ -1502,7 +1504,6 @@ pg_recovery_settings(PG_FUNCTION_ARGS)
 		tuplestore_putvalues(tupstore, tupdesc, values, nulls);
 	}
 
-	tuplestore_donestoring(tupstore);
 	return (Datum) 0;
 }
 
